@@ -8,7 +8,8 @@ import { scoreContent } from '@/services/scoringService';
 import { dynamoDb } from '@/lib/dynamoClient';
 import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { randomUUID } from 'crypto';
-import { OptimizationResult, Platform, Post } from '@/types/post';
+import { OptimizationResult, Platform, Post, CulturalContext } from '@/types/post';
+import { generateCulturalPrompt } from '@/types/culturalContext';
 
 const OPTIMIZATIONS_TABLE = process.env.OPTIMIZATIONS_TABLE!;
 const POSTS_TABLE = process.env.POSTS_TABLE!;
@@ -112,17 +113,25 @@ async function runOptimization(
  */
 export async function improveHook(post_id: string, user_id: string): Promise<OptimizationResult> {
     const post = await fetchPost(post_id, user_id);
+    const culturalContext = post.cultural_context || 'None';
+    const culturalPrompt = generateCulturalPrompt(culturalContext);
 
-    const prompt = `You are an expert social media copywriter specializing in viral content. Your task is to dramatically improve the opening "hook" of the following ${post.platform} post.
+    const prompt = `You are an expert social media copywriter specializing in viral content and culturally resonant messaging. Your task is to dramatically improve the opening "hook" of the following ${post.platform} post.
 
 Original post:
 "${post.content}"
+
+Post Context:
+- Platform: ${post.platform}
+- Target Language: ${post.target_language}
+- Cultural Context: ${culturalContext}${culturalPrompt}
 
 Instructions:
 1. Analyze the post and identify its core value proposition.
 2. Rewrite the opening 1-2 sentences to be extremely compelling, curiosity-inducing, or surprisingly insightful. The goal is to maximize the "stop-scrolling" effect.
 3. Ensure the tone matches the rest of the post and is suitable for ${post.platform}.
 4. Do not alter the core message or the call-to-action; focus solely on making the beginning irresistible.
+5. ${culturalContext !== 'None' ? `Incorporate culturally relevant elements from ${culturalContext} to make the hook more relatable and engaging for Indian audiences. Use appropriate cultural emojis, slang, or references that resonate with this context.` : 'Keep the tone professional and engaging without specific cultural references.'}
 
 Return ONLY valid JSON in this exact format (no markdown blocks or explanations, just the JSON). Ensure that any newlines or quotes inside string values are properly escaped (e.g. \\n):
 {

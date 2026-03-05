@@ -1,6 +1,11 @@
 // Types for Post data structures used across the app
+import { CulturalContext } from './culturalContext';
 
 export type Platform = 'Twitter' | 'LinkedIn' | 'Instagram';
+
+export type IndicLanguage = 'English' | 'Hindi' | 'Marathi' | 'Tamil' | 'Bengali' | 'Telugu' | 'Gujarati' | 'Kannada' | 'Malayalam' | 'Punjabi';
+
+export type { CulturalContext };
 
 export interface ScoreResult {
   hook_score: number;
@@ -20,6 +25,8 @@ export interface Post {
   post_id: string;
   content: string;
   platform: Platform;
+  target_language: IndicLanguage;
+  cultural_context?: CulturalContext;
   hook_score: number;
   clarity_score: number;
   cta_score: number;
@@ -33,6 +40,8 @@ export interface CreatePostInput {
   user_id: string;
   idea: string;
   platform: Platform;
+  target_language: IndicLanguage;
+  cultural_context?: CulturalContext;
 }
 
 export interface OptimizationType {

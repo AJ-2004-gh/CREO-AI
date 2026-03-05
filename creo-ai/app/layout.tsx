@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export const metadata: Metadata = {
   title: "CREO-AI — Social Media Content Studio",
@@ -22,10 +22,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen">
-        <Navbar />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
+        <AppLayout>{children}</AppLayout>
       </body>
     </html>
   );
