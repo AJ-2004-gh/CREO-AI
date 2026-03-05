@@ -28,11 +28,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden touch-manipulation';
     
     const variants = {
-      primary: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-sm hover:shadow-md',
-      secondary: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 focus:ring-purple-500 shadow-sm hover:shadow-md',
-      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-blue-500',
-      ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-      danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 focus:ring-red-500 shadow-sm hover:shadow-md'
+      primary: 'btn-gradient border border-white/20 text-white',
+      secondary: 'bg-white/80 backdrop-blur-md text-gray-800 border border-white/50 hover:bg-white hover:border-white shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]',
+      outline: 'border-2 border-blue-200/50 bg-white/50 backdrop-blur-md text-blue-700 hover:bg-white hover:border-blue-400 focus:ring-blue-500 shadow-sm hover:shadow-md',
+      ghost: 'text-gray-600 hover:bg-white/60 hover:text-blue-600 focus:ring-gray-500 transition-colors cursor-pointer',
+      danger: 'bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700 focus:ring-red-500 shadow-md hover:shadow-lg border border-red-400/30'
     };
     
     const sizes = {

@@ -44,10 +44,10 @@ function StatCard({
 }) {
   return (
     <motion.div
-      className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+      className="card p-6 border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.1)] transition-all duration-300 hover:-translate-y-1"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
       whileHover={{ scale: 1.02 }}
     >
       <div className="flex items-center justify-between mb-4">

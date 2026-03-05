@@ -15,13 +15,13 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const baseStyles = 'rounded-2xl transition-all duration-200';
     
     const variants = {
-      default: 'bg-white border border-gray-200 shadow-sm',
-      elevated: 'bg-white border-0 shadow-lg',
-      outlined: 'bg-white border-2 border-gray-200 shadow-none',
-      glass: 'bg-white/80 backdrop-blur-md border border-white/20 shadow-lg'
+      default: 'card',
+      elevated: 'card shadow-2xl border-white/60',
+      outlined: 'bg-white/50 backdrop-blur-md border-2 border-white/40 shadow-none hover:bg-white/60',
+      glass: 'glass'
     };
     
-    const hoverStyles = hover ? 'hover:shadow-xl hover:-translate-y-0.5' : '';
+    const hoverStyles = hover ? 'hover:-translate-y-1' : '';
 
     const filteredProps = Object.fromEntries(
       Object.entries(props).filter(([key]) => !key.startsWith('onDrag'))
