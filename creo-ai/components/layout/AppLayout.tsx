@@ -11,38 +11,42 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
   const isAuthPage = pathname === '/login';
 
-  // Close sidebar when clicking outside on mobile
+  // On large screens start expanded; on small screens, start collapsed
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
+      if (window.innerWidth < 1024) {
         setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
       }
     };
 
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   if (isAuthPage) {
-    return <main className="min-h-screen bg-gray-50">{children}</main>;
+    return <main className="min-h-screen">{children}</main>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen flex" style={{ background: 'var(--background)' }}>
       <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-      
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out">
+
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen w-full">
         <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        
+
         <motion.main
-          className="flex-1 p-4 sm:p-6 w-full mx-auto"
-          initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+          key={pathname}
+          className="flex-1 p-4 sm:p-6 lg:p-8 w-full"
+          initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
           {children}
         </motion.main>

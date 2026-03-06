@@ -177,42 +177,45 @@ function OptimizationCard({
   const improved = improvement > 0;
 
   return (
-    <div className="card p-6 border-l-4 border-blue-500">
+    <div className="card p-6" style={{ borderLeft: '4px solid #14b8a6' }}>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-gray-800 capitalize">{type} Optimization Result</h3>
+          <h3 className="font-bold text-slate-800 capitalize">{type} Optimization Result</h3>
           <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full mt-1 inline-block ${improved ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-              }`}
+            className="text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1.5 inline-block"
+            style={improved
+              ? { background: 'rgba(20,184,166,0.12)', color: '#0f766e', border: '1px solid rgba(20,184,166,0.2)' }
+              : { background: '#f1f5f9', color: '#64748b' }
+            }
           >
             {improved ? `+${improvement}% improvement` : 'No improvement'}
           </span>
         </div>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none">×</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         {/* Before */}
-        <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-500 mb-2">BEFORE</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{result.original_content}</p>
-          <div className="mt-3 text-xs text-gray-400">Score: {result.original_score.final_score}/100</div>
+        <div className="rounded-xl p-4" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+          <p className="text-xs font-bold text-slate-500 mb-2 tracking-wider">BEFORE</p>
+          <p className="text-sm text-slate-700 leading-relaxed">{result.original_content}</p>
+          <div className="mt-3 text-xs text-slate-400">Score: {result.original_score.final_score}/100</div>
         </div>
         {/* After */}
-        <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+        <div className="rounded-xl p-4" style={{ background: 'rgba(20,184,166,0.05)', border: '1px solid rgba(20,184,166,0.15)' }}>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-blue-600">AFTER</p>
+            <p className="text-xs font-bold text-teal-600 tracking-wider">AFTER</p>
             <CopyButton text={result.improved_content} />
           </div>
-          <p className="text-sm text-gray-700 leading-relaxed">{result.improved_content}</p>
-          <div className="mt-3 text-xs text-blue-500">Score: {result.improved_score.final_score}/100</div>
+          <p className="text-sm text-slate-700 leading-relaxed">{result.improved_content}</p>
+          <div className="mt-3 text-xs" style={{ color: '#14b8a6' }}>Score: {result.improved_score.final_score}/100</div>
         </div>
       </div>
 
       {result.suggested_hashtags && result.suggested_hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {result.suggested_hashtags.map((tag) => (
-            <span key={tag} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+            <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(20,184,166,0.08)', color: '#0f766e', border: '1px solid rgba(20,184,166,0.18)' }}>
               #{tag.replace(/^#/, '')}
             </span>
           ))}
@@ -555,10 +558,10 @@ export default function CreatePage() {
   };
 
   const scoreColors: Record<string, string> = {
-    hook_score: '#f59e0b',
-    clarity_score: '#10b981',
-    cta_score: '#8b5cf6',
-    final_score: '#2563eb',
+    hook_score:    '#f59e0b',
+    clarity_score: '#14b8a6',
+    cta_score:     '#a855f7',
+    final_score:   '#0d9488',
   };
 
   return (
@@ -571,43 +574,41 @@ export default function CreatePage() {
         transition={{ duration: 0.5 }}
       >
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-            Create Content
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Create{' '}
+            <span style={{ background: 'linear-gradient(135deg, #14b8a6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Content</span>
           </h1>
-          <p className="text-gray-500 text-sm mt-2">Generate, score, and optimize your social media posts with AI</p>
+          <p className="text-slate-500 text-sm font-medium mt-1.5">Generate, score, and optimize your social media posts with AI</p>
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-          <span className="text-sm font-medium text-gray-700">Choose your experience:</span>
+        <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(20,184,166,0.1)', backdropFilter: 'blur(8px)' }}>
+          <span className="text-sm font-semibold text-slate-600">Experience:</span>
           <div className="flex gap-2">
             <button
               onClick={() => setMode('simple')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'simple'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-              }`}
+              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={mode === 'simple'
+                ? { background: 'linear-gradient(135deg, #14b8a6, #0d9488)', color: 'white', boxShadow: '0 4px 14px rgba(20,184,166,0.35)' }
+                : { background: 'white', color: '#475569', border: '1px solid #e2e8f0' }
+              }
             >
-              Quick Mode
+              ⚡ Quick Mode
             </button>
             <button
               onClick={() => setMode('conversational')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'conversational'
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-              }`}
+              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={mode === 'conversational'
+                ? { background: 'linear-gradient(135deg, #a855f7, #7e22ce)', color: 'white', boxShadow: '0 4px 14px rgba(168,85,247,0.35)' }
+                : { background: 'white', color: '#475569', border: '1px solid #e2e8f0' }
+              }
             >
-              Guided Mode
+              💬 Guided Mode
             </button>
           </div>
-          <div className="text-xs text-gray-500 ml-auto">
-            {mode === 'simple'
-              ? 'Perfect for quick content creation'
-              : 'Ideal for detailed, personalized content'
-            }
-          </div>
+          <span className="text-xs text-slate-400 font-medium ml-auto">
+            {mode === 'simple' ? 'Perfect for quick content creation' : 'Ideal for detailed, personalized content'}
+          </span>
         </div>
       </motion.div>
 
@@ -629,23 +630,19 @@ export default function CreatePage() {
                     <motion.button
                       key={p}
                       onClick={() => setPlatform(p)}
-                      className={`relative p-3 rounded-xl border-2 transition-all duration-200 ${
-                        platform === p
-                          ? 'bg-blue-50 border-blue-500 shadow-md'
-                          : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                      }`}
+                      className="relative p-3 rounded-xl border-2 transition-all duration-200"
+                      style={platform === p
+                        ? { background: 'rgba(20,184,166,0.06)', borderColor: '#14b8a6', boxShadow: '0 4px 12px rgba(20,184,166,0.15)' }
+                        : { background: 'white', borderColor: '#e2e8f0' }
+                      }
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <div className="text-left">
-                        <p className={`font-medium text-sm ${
-                          platform === p ? 'text-blue-700' : 'text-gray-700'
-                        }`}>
+                        <p className="font-semibold text-sm" style={{ color: platform === p ? '#0f766e' : '#475569' }}>
                           {p}
                         </p>
-                        <p className={`text-xs ${
-                          platform === p ? 'text-blue-600' : 'text-gray-400'
-                        }`}>
+                        <p className="text-xs" style={{ color: platform === p ? '#14b8a6' : '#94a3b8' }}>
                           {PLATFORM_META[p].desc}
                         </p>
                       </div>
@@ -730,38 +727,35 @@ export default function CreatePage() {
           <Card className="p-6 sm:p-8 space-y-6 sm:space-y-8">
             {/* Platform selector */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3 sm:mb-4">Platform</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Platform</label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 {PLATFORMS.map((p) => (
                   <motion.button
                     key={p}
                     onClick={() => setPlatform(p)}
-                    className={`relative p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 ${
-                      platform === p
-                        ? 'bg-blue-50 border-blue-500 shadow-md'
-                        : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                    }`}
+                    className="relative p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200"
+                    style={platform === p
+                      ? { background: 'rgba(20,184,166,0.06)', borderColor: '#14b8a6', boxShadow: '0 4px 14px rgba(20,184,166,0.15)' }
+                      : { background: 'white', borderColor: '#e2e8f0' }
+                    }
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-center space-y-2">
                       <span className="text-xl sm:text-2xl">{PLATFORM_META[p].icon}</span>
                       <div>
-                        <p className={`font-medium text-sm ${
-                          platform === p ? 'text-blue-700' : 'text-gray-700'
-                        }`}>
+                        <p className="font-semibold text-sm" style={{ color: platform === p ? '#0f766e' : '#475569' }}>
                           {p}
                         </p>
-                        <p className={`text-xs ${
-                          platform === p ? 'text-blue-600' : 'text-gray-400'
-                        }`}>
+                        <p className="text-xs" style={{ color: platform === p ? '#14b8a6' : '#94a3b8' }}>
                           {PLATFORM_META[p].desc}
                         </p>
                       </div>
                     </div>
                     {platform === p && (
                       <motion.div
-                        className="absolute inset-0 rounded-2xl border-2 border-blue-500 pointer-events-none"
+                        className="absolute inset-0 rounded-2xl pointer-events-none"
+                        style={{ border: '2px solid #14b8a6' }}
                         initial={{ scale: 0.95 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.2 }}
@@ -774,12 +768,12 @@ export default function CreatePage() {
 
             {/* Language selector */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3 sm:mb-4">Target Language</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Target Language</label>
               <div className="relative">
                 <select
                   value={targetLanguage}
                   onChange={(e) => setTargetLanguage(e.target.value as IndicLanguage)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer hover:border-gray-300 transition-all"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 appearance-none cursor-pointer hover:border-teal-300 transition-all"
                 >
                   {LANGUAGES.map((lang) => (
                     <option key={lang} value={lang}>
@@ -800,12 +794,12 @@ export default function CreatePage() {
 
             {/* Cultural Context selector */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3 sm:mb-4">Cultural Context (Optional)</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Cultural Context (Optional)</label>
               <div className="relative">
                 <select
                   value={culturalContext}
                   onChange={(e) => setCulturalContext(e.target.value as CulturalContext)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none cursor-pointer hover:border-gray-300 transition-all"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 appearance-none cursor-pointer hover:border-teal-300 transition-all"
                 >
                   {CULTURAL_CONTEXTS.map((context) => (
                     <option key={context} value={context}>
@@ -859,7 +853,7 @@ export default function CreatePage() {
 
             {/* Visuals Section */}
             <div className="pt-6 border-t border-gray-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-4">Visuals</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-4">Visuals</label>
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
                   { mode: 'none' as const, label: 'No Image', icon: <X className="w-4 h-4" /> },
@@ -869,23 +863,23 @@ export default function CreatePage() {
                   <motion.button
                     key={imgMode}
                     onClick={() => setImageMode(imgMode)}
-                    className={`p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
-                      imageMode === imgMode
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
-                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                    }`}
+                    className="p-3 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2"
+                    style={imageMode === imgMode
+                      ? { background: 'rgba(20,184,166,0.08)', borderColor: '#14b8a6', color: '#0f766e' }
+                      : { background: 'white', borderColor: '#e2e8f0', color: '#64748b' }
+                    }
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     {icon}
-                    <span className="text-xs font-medium">{label}</span>
+                    <span className="text-xs font-semibold">{label}</span>
                   </motion.button>
                 ))}
               </div>
 
               {imageMode === 'modify' && (
                 <div className="space-y-4">
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:bg-gray-50 hover:border-blue-300 transition-colors relative">
+                  <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:bg-slate-50 hover:border-teal-300 transition-colors relative">
                     <input
                       type="file"
                       accept="image/png, image/jpeg, image/webp"
@@ -916,10 +910,10 @@ export default function CreatePage() {
                 </div>
               )}
               {imageMode === 'generate' && (
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="p-4 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.08), rgba(168,85,247,0.06))', border: '1px solid rgba(20,184,166,0.2)' }}>
                   <div className="flex items-center gap-3">
-                    <Sparkles className="w-5 h-5 text-blue-600" />
-                    <p className="text-sm text-blue-700">An AI image will be generated automatically based on your post idea.</p>
+                    <Sparkles className="w-5 h-5 text-teal-600" />
+                    <p className="text-sm font-medium text-teal-700">An AI image will be generated automatically based on your post idea.</p>
                   </div>
                 </div>
               )}
@@ -955,17 +949,17 @@ export default function CreatePage() {
           <div className="card p-6 space-y-5">
             {/* Content header */}
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-800">Generated Content</h2>
+              <h2 className="text-base font-bold text-slate-800">Generated Content</h2>
               <div className="flex items-center gap-2">
                 <CopyButton text={post.content} />
-                <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium">
+                <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'rgba(20,184,166,0.1)', color: '#0f766e', border: '1px solid rgba(20,184,166,0.2)' }}>
                   {post.platform}
                 </span>
-                <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-medium">
+                <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'rgba(168,85,247,0.1)', color: '#7e22ce', border: '1px solid rgba(168,85,247,0.2)' }}>
                   {LANGUAGE_META[post.target_language].code}
                 </span>
                 {post.cultural_context && post.cultural_context !== 'None' && (
-                  <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+                  <span className="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1" style={{ background: 'rgba(245,158,11,0.1)', color: '#b45309', border: '1px solid rgba(245,158,11,0.2)' }}>
                     {CULTURAL_CONTEXT_META[post.cultural_context].icon} {post.cultural_context}
                   </span>
                 )}
@@ -1001,18 +995,18 @@ export default function CreatePage() {
                 </div>
               )}
               {generatingImage && (
-                <div className="w-full h-64 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 flex flex-col items-center justify-center gap-3">
+                <div className="w-full h-64 rounded-xl flex flex-col items-center justify-center gap-3" style={{ background: 'linear-gradient(135deg, rgba(20,184,166,0.06), rgba(168,85,247,0.05))', border: '1px solid rgba(20,184,166,0.15)' }}>
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full border-4 border-blue-100 border-t-blue-500 animate-spin" />
+                    <div className="w-12 h-12 rounded-full border-4 border-teal-100 border-t-teal-500 animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-lg">🎨</span>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold text-blue-700">Generating image with Nova Canvas...</span>
-                  <span className="text-xs text-blue-400">This may take 10–20 seconds</span>
+                  <span className="text-sm font-semibold text-teal-700">Generating image with Nova Canvas...</span>
+                  <span className="text-xs text-teal-400">This may take 10–20 seconds</span>
                 </div>
               )}
-              <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <div className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap" style={{ background: 'rgba(248,250,251,0.8)', color: '#334155', border: '1px solid rgba(0,0,0,0.05)' }}>
                 {post.content}
               </div>
             </div>
@@ -1023,7 +1017,7 @@ export default function CreatePage() {
                 <p className="text-xs font-medium text-gray-500 mb-2">Suggested Hashtags</p>
                 <div className="flex flex-wrap gap-1.5">
                   {post.suggested_hashtags.map((tag: string) => (
-                    <span key={tag} className="text-xs bg-blue-50 text-blue-600 border border-blue-100 px-2.5 py-1 rounded-full">
+                    <span key={tag} className="text-xs px-2.5 py-1 rounded-full font-semibold" style={{ background: 'rgba(20,184,166,0.08)', color: '#0f766e', border: '1px solid rgba(20,184,166,0.18)' }}>
                       #{tag.replace(/^#/, '')}
                     </span>
                   ))}
@@ -1034,9 +1028,9 @@ export default function CreatePage() {
             {/* Score breakdown */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700">Engagement Score Breakdown</h3>
-                <span className="text-2xl font-bold text-blue-600">
-                  {post.final_score}<span className="text-sm text-gray-400 font-normal">/100</span>
+                <h3 className="text-sm font-bold text-slate-700">Engagement Score Breakdown</h3>
+                <span className="text-2xl font-extrabold" style={{ background: 'linear-gradient(135deg, #14b8a6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  {post.final_score}<span className="text-sm font-normal text-slate-400" style={{ WebkitTextFillColor: '#94a3b8' }}>/100</span>
                 </span>
               </div>
               <div className="space-y-3">
@@ -1050,8 +1044,8 @@ export default function CreatePage() {
 
           {/* Optimization Panel */}
           <div className="card p-6">
-            <h2 className="text-base font-semibold text-gray-800 mb-1">Optimization Panel</h2>
-            <p className="text-xs text-gray-400 mb-5">AI will rewrite and re-score your content</p>
+            <h2 className="text-base font-bold text-slate-800 mb-1">Optimization Panel</h2>
+            <p className="text-xs text-slate-400 font-medium mb-5">AI will rewrite and re-score your content</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
@@ -1064,13 +1058,16 @@ export default function CreatePage() {
                   id={`optimize-${type}`}
                   onClick={() => handleOptimize(type)}
                   disabled={!!optimizing}
-                  className="flex flex-col items-center p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all group text-left gap-1.5"
+                  className="flex flex-col items-center p-4 rounded-xl transition-all group gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ border: '1.5px solid #e2e8f0' }}
+                  onMouseEnter={e => { if (!optimizing) { (e.currentTarget as HTMLButtonElement).style.borderColor = '#14b8a6'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(20,184,166,0.05)'; } }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = '#e2e8f0'; (e.currentTarget as HTMLButtonElement).style.background = ''; }}
                 >
                   <span className="text-2xl">{icon}</span>
-                  <span className="text-sm font-semibold text-gray-800 group-hover:text-blue-700">
+                  <span className="text-sm font-bold text-slate-700 group-hover:text-teal-700 transition-colors">
                     {optimizing === type ? 'Optimizing...' : label}
                   </span>
-                  <span className="text-xs text-gray-400">{desc}</span>
+                  <span className="text-xs text-slate-400">{desc}</span>
                 </button>
               ))}
             </div>
