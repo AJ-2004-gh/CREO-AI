@@ -102,8 +102,12 @@ For ALL platforms:
    - NEVER write a generic 2-line post. Always add texture: anecdotes, specific details, numbers, lists, or emotional resonance.
    - If cultural context is set, weave it naturally into the post (references, occasions, language nuances).
    - If language is not English, write the ENTIRE post in that language.`,
-    // Stop after 5 steps to prevent infinite loops
-    stopWhen: stepCountIs(5),
+    // Stop after 5 steps to prevent infinite loops, or immediately after generate_post
+    stopWhen: ({ steps }) => {
+      if (steps.length >= 5) return true;
+      const toolCalls = steps.flatMap((step) => step.toolCalls || []);
+      return toolCalls.some((call) => call.toolName === 'generate_post');
+    },
     tools: {
       // ask_questions has NO execute — it is a client-side tool.
       // The frontend renders the form and calls addToolOutput() with the user's answers,
