@@ -179,15 +179,16 @@ Return ONLY valid JSON in this exact format (no markdown blocks or explanations,
 export async function suggestHashtags(post_id: string, user_id: string): Promise<OptimizationResult> {
     const post = await fetchPost(post_id, user_id);
 
-    const prompt = `You are an algorithm and discoverability expert for social media platforms. Your task is to provide the optimal mix of hashtags for the following ${post.platform} post.
+    const prompt = `You are an algorithm and discoverability expert for social media platforms focusing on Indian demographics. Your task is to provide the optimal mix of hashtags for the following ${post.platform} post.
 
 Post content:
 "${post.content}"
 
 Instructions:
 1. Analyze the context, target audience, and main keywords of the post.
-2. Generate 4 to 7 highly strategic hashtags. Include a mix of broad trending tags for reach, and niche tags for targeted engagement.
-3. Append these suggested hashtags to the end of the post content seamlessly (or format them as appropriate for ${post.platform}).
+2. Generate 4 to 7 highly strategic hashtags specifically targeting the Indian market and demographics.
+3. Include a mix of localized tags (e.g., #VocalForLocal, #ONDC, #BengaluruStartups, #DesiCreators) alongside broad and niche trending tags.
+4. Append these suggested hashtags to the end of the post content seamlessly (or format them as appropriate for ${post.platform}).
 
 Return ONLY valid JSON in this exact format (no markdown blocks or explanations, just the JSON). Ensure that any newlines or quotes inside string values are properly escaped (e.g. \\n):
 {
