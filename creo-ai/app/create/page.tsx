@@ -268,93 +268,109 @@ export default function CreatePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
 
-  const recognitionRef = useRef<any>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const pcmBufferRef = useRef<Float32Array[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const chunkTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isSendingChunkRef = useRef(false);
 
-  // Map language names to Web Speech API BCP-47 codes
-  const SPEECH_LANG_MAP: Record<string, string> = {
-    English: "en-US",
-    Hindi: "hi-IN",
-    Marathi: "mr-IN",
-    Tamil: "ta-IN",
-    Bengali: "bn-IN",
-    Telugu: "te-IN",
-    Gujarati: "gu-IN",
-    Kannada: "kn-IN",
-    Malayalam: "ml-IN",
-    Punjabi: "pa-IN",
+  // Build a WAV file from accumulated Float32 PCM chunks and return as base64
+  const buildWavBase64 = (chunks: Float32Array[]): string => {
+    const totalLen = chunks.reduce((s, c) => s + c.length, 0);
+    if (totalLen === 0) return '';
+    const combined = new Float32Array(totalLen);
+    let pos = 0;
+    for (const c of chunks) { combined.set(c, pos); pos += c.length; }
+    const SR = 16000;
+    const dataSize = combined.length * 2;
+    const buf = new ArrayBuffer(44 + dataSize);
+    const v = new DataView(buf);
+    const str = (o: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    str(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true); str(8, 'WAVE');
+    str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+    v.setUint16(22, 1, true); v.setUint32(24, SR, true);
+    v.setUint32(28, SR * 2, true); v.setUint16(32, 2, true);
+    v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, dataSize, true);
+    let i = 44;
+    for (const s of combined) { v.setInt16(i, Math.max(-32768, Math.min(32767, s * 32768)), true); i += 2; }
+    let bin = '';
+    const bytes = new Uint8Array(buf);
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin);
+  };
+
+  const sendPcmChunk = async (lang: string) => {
+    if (isSendingChunkRef.current) return; // skip if previous chunk still in-flight
+    const chunks = pcmBufferRef.current.splice(0);
+    const base64 = buildWavBase64(chunks);
+    if (!base64) return;
+
+    isSendingChunkRef.current = true;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('creo_token') : null;
+    if (!token) { isSendingChunkRef.current = false; return; }
+
+    try {
+      const res = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ audio_base64: base64, language: lang }), // lang is the full name e.g. 'Hindi'
+      });
+      if (res.status === 401) { router.push('/login'); return; }
+      const data = await res.json();
+      if (data.transcript) {
+        setIdea((prev) => (prev.trim() ? prev.trimEnd() + ' ' + data.transcript : data.transcript));
+      }
+    } catch (err) {
+      console.error('Chunk transcription error:', err);
+    } finally {
+      isSendingChunkRef.current = false;
+    }
   };
 
   const startRecording = async () => {
+    setError('');
     try {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
 
-      if (!SpeechRecognition) {
-        setError("Speech recognition is not supported in this browser. Please use Chrome.");
-        return;
-      }
+      const audioContext = new AudioContext({ sampleRate: 16000 });
+      audioContextRef.current = audioContext;
 
-      const recognition = new SpeechRecognition();
-      recognition.lang = SPEECH_LANG_MAP[targetLanguage] || "en-US";
-      recognition.continuous = true;
-      recognition.interimResults = false;
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      processorRef.current = processor;
+      pcmBufferRef.current = [];
 
-      recognition.onresult = (event: any) => {
-        const last = event.results[event.results.length - 1];
-        if (last.isFinal) {
-          const transcript = last[0].transcript;
-          setIdea((prev) => (prev ? prev + " " + transcript : transcript));
-        }
+      processor.onaudioprocess = (e) => {
+        pcmBufferRef.current.push(new Float32Array(e.inputBuffer.getChannelData(0)));
       };
 
-      recognition.onerror = (event: any) => {
-        console.error("Speech recognition error:", event.error);
-        if (event.error !== "no-speech") {
-          setError("Speech recognition error: " + event.error);
-          stopRecording();
-        }
-      };
-
-      recognition.onend = () => {
-        // Auto-restart if still recording (browser stops after silence)
-        if (recognitionRef.current) {
-          try {
-            recognitionRef.current.start();
-          } catch {
-            // Already started or stopped
-          }
-        }
-      };
-
-      recognition.start();
-      recognitionRef.current = recognition;
+      source.connect(processor);
+      processor.connect(audioContext.destination);
 
       setIsRecording(true);
       setRecordingTime(0);
-
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-    } catch (error) {
-      console.error("Failed to start recording:", error);
-      setError("Could not start speech recognition. Please check permissions.");
+      timerRef.current = setInterval(() => setRecordingTime((p) => p + 1), 1000);
+      // Send a chunk every ~700ms — text appears live as you speak
+      // Pass full language name (e.g. 'Hindi') — backend maps it to Deepgram code
+      chunkTimerRef.current = setInterval(() => sendPcmChunk(targetLanguage), 700);
+    } catch (err) {
+      console.error('Failed to start recording:', err);
+      setError('Could not access microphone. Please check permissions.');
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     setIsRecording(false);
-
-    if (recognitionRef.current) {
-      recognitionRef.current.onend = null; // prevent auto-restart
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    if (chunkTimerRef.current) { clearInterval(chunkTimerRef.current); chunkTimerRef.current = null; }
+    if (processorRef.current) { processorRef.current.disconnect(); processorRef.current = null; }
+    if (audioContextRef.current) { audioContextRef.current.close(); audioContextRef.current = null; }
+    if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
+    // Flush any remaining audio after the last chunk
+    await sendPcmChunk(targetLanguage);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1055,8 +1071,12 @@ export default function CreatePage() {
                 >
                   {isRecording ? (
                     <>
-                      <Square className="w-4 h-4 fill-current" />
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                      </span>
                       <span className="text-xs font-semibold">{recordingTime}s</span>
+                      <Square className="w-3.5 h-3.5 fill-current" />
                     </>
                   ) : (
                     <Mic className="w-4 h-4" />
@@ -1071,6 +1091,15 @@ export default function CreatePage() {
                 placeholder={`Describe your post idea for ${platform} in ${targetLanguage === 'English' ? 'English' : LANGUAGE_META[targetLanguage].native}...\ne.g. "Tips for remote developers to stay productive"`}
                 className="resize-none"
               />
+              {isRecording && (
+                <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl bg-teal-50 border border-teal-100">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
+                  </span>
+                  <p className="text-xs text-teal-700 font-medium">Listening… text appears every few seconds</p>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
                 <p className="text-xs text-gray-400">{idea.length} characters</p>
                 {idea.length > 0 && (
