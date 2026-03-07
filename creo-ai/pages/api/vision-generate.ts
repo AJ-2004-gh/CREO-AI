@@ -1,0 +1,125 @@
+/**
+ * POST /api/vision-generate
+ * Analyzes an uploaded image using Amazon Bedrock Vision (Claude 3 Sonnet)
+ * and generates social media content based on the visual content.
+ */
+import type { NextApiResponse } from 'next';
+import { withAuth, AuthenticatedRequest } from '@/lib/authMiddleware';
+import { generateContentFromImage } from '@/services/visionService';
+import { scoreContent } from '@/services/scoringService';
+import { dynamoDb } from '@/lib/dynamoClient';
+import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { randomUUID } from 'crypto';
+import { Platform, IndicLanguage, CulturalContext } from '@/types/post';
+
+const POSTS_TABLE = process.env.POSTS_TABLE!;
+
+const VALID_PLATFORMS: Platform[] = ['Twitter', 'LinkedIn', 'Instagram'];
+const VALID_LANGUAGES: IndicLanguage[] = ['English', 'Hindi', 'Marathi', 'Tamil', 'Bengali', 'Telugu', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi'];
+const VALID_CULTURAL_CONTEXTS: CulturalContext[] = [
+    'Diwali', 'Holi', 'Eid', 'Christmas', 'Pongal', 'Onam', 'Durga Puja', 'Ganesh Chaturthi', 'Navratri',
+    'IPL Season', 'Cricket World Cup', 'Monsoon', 'Summer', 'Winter', 'Wedding Season', 'Festival Season',
+    'Independence Day', 'Republic Day', 'New Year', 'None'
+];
+
+// Increase body size limit for image uploads
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb',
+        },
+    },
+};
+
+async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    try {
+        const { image_base64, platform, target_language, cultural_context, additional_context } = req.body as {
+            image_base64?: string;
+            platform?: string;
+            target_language?: string;
+            cultural_context?: string;
+            additional_context?: string;
+        };
+
+        // Input validation
+        if (!image_base64 || typeof image_base64 !== 'string') {
+            return res.status(400).json({ error: 'image_base64 is required and must be a base64-encoded string' });
+        }
+        if (!platform || !VALID_PLATFORMS.includes(platform as Platform)) {
+            return res.status(400).json({ error: `platform must be one of: ${VALID_PLATFORMS.join(', ')}` });
+        }
+        if (!target_language || !VALID_LANGUAGES.includes(target_language as IndicLanguage)) {
+            return res.status(400).json({ error: `target_language must be one of: ${VALID_LANGUAGES.join(', ')}` });
+        }
+        if (cultural_context && !VALID_CULTURAL_CONTEXTS.includes(cultural_context as CulturalContext)) {
+            return res.status(400).json({ error: `cultural_context must be one of: ${VALID_CULTURAL_CONTEXTS.join(', ')}` });
+        }
+
+        const typedPlatform = platform as Platform;
+        const typedLanguage = target_language as IndicLanguage;
+        const typedCulturalContext = (cultural_context || 'None') as CulturalContext;
+        const userId = req.userId;
+
+        // Extract base64 data (remove data:image/...;base64, prefix if present)
+        const base64Data = image_base64.includes(',') 
+            ? image_base64.split(',')[1] 
+            : image_base64;
+
+        console.log('[vision-generate] Processing image for user:', userId);
+        console.log('[vision-generate] Platform:', typedPlatform, 'Language:', typedLanguage);
+
+        // 1. Analyze image and generate content via Vision AI
+        const generated = await generateContentFromImage(
+            base64Data,
+            typedPlatform,
+            typedLanguage,
+            typedCulturalContext,
+            additional_context
+        );
+
+        console.log('[vision-generate] Content generated successfully');
+
+        // 2. Score the generated content
+        const scores = await scoreContent(generated.content, typedPlatform);
+
+        // 3. Build the post record
+        const post = {
+            user_id: userId,
+            created_at: Date.now(),
+            post_id: randomUUID(),
+            content: generated.content,
+            platform: typedPlatform,
+            target_language: typedLanguage,
+            cultural_context: typedCulturalContext,
+            idea: generated.image_description || 'Generated from image',
+            suggested_hashtags: generated.suggested_hashtags,
+            generation_type: 'vision',
+            ...scores,
+        };
+
+        // 4. Persist to DynamoDB Posts table
+        await dynamoDb.send(
+            new PutCommand({
+                TableName: POSTS_TABLE,
+                Item: post,
+            })
+        );
+
+        console.log('[vision-generate] Post saved to database');
+
+        return res.status(200).json({
+            ...post,
+            image_description: generated.image_description,
+        });
+    } catch (error) {
+        console.error('[/api/vision-generate] Error:', error);
+        const message = error instanceof Error ? error.message : 'Internal server error';
+        return res.status(500).json({ error: message });
+    }
+}
+
+export default withAuth(handler);

@@ -21,7 +21,7 @@ export function Navbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const page = PAGE_TITLES[pathname] || { title: 'CREO-AI', sub: 'Your AI content studio' };
+  const page = (pathname && PAGE_TITLES[pathname]) || { title: 'CREO-AI', sub: 'Your AI content studio' };
 
   const handleSignOut = () => {
     localStorage.removeItem('creo_token');
