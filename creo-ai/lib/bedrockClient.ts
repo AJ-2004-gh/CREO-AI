@@ -4,11 +4,9 @@ import {
 } from '@aws-sdk/client-bedrock-runtime';
 
 const bedrockClient = new BedrockRuntimeClient({
-    region: process.env.AWS_REGION!,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
+    region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+    // Credentials will be automatically loaded from IAM role in production
+    // or from environment in development
 });
 
 /**

@@ -3,24 +3,18 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { invokeModel as invokeTextModel } from '@/lib/bedrockClient';
 
-const region = process.env.AWS_REGION || 'us-east-1';
+const region = process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1';
 const bucketName = process.env.S3_BUCKET_NAME!;
 const IMAGE_MODEL_ID = process.env.IMAGE_MODEL_ID || 'amazon.nova-canvas-v1:0';
 
 const bedrockClient = new BedrockRuntimeClient({
     region,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
+    // Credentials will be automatically loaded from IAM role
 });
 
 const s3Client = new S3Client({
     region,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
+    // Credentials will be automatically loaded from IAM role
 });
 
 async function uploadToS3(base64Data: string): Promise<string> {

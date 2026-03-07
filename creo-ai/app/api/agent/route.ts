@@ -20,9 +20,8 @@ const POSTS_TABLE = process.env.POSTS_TABLE!;
 export const maxDuration = 60;
 
 const bedrock = createAmazonBedrock({
-  region: process.env.AWS_REGION!,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+  // Credentials will be automatically loaded from IAM role
 });
 
 export async function POST(req: Request) {
