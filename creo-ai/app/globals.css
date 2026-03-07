@@ -154,6 +154,7 @@ body {
   box-shadow: var(--shadow-brand);
   position: relative;
   overflow: hidden;
+  z-index: 1;
 }
 
 .btn-gradient::before {
@@ -163,6 +164,7 @@ body {
   background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 40%, #c084fc 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
 .btn-gradient:hover::before {

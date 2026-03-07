@@ -83,7 +83,7 @@ Model ID: us.amazon.nova-pro-v1:0
 
 **Best For:**
 - E-commerce product posts
-- ONDC seller content
+- Small business seller content
 - High-volume generation
 - Production environments
 
@@ -188,7 +188,7 @@ Model ID: us.amazon.nova-lite-v1:0
 ```
 "✨ Light up your Diwali with our handcrafted terracotta diyas! 
 Each piece is lovingly made by local artisans, bringing authentic 
-festive vibes to your home. Order now on ONDC! 🪔 #Diwali2024"
+festive vibes to your home. Order now via the link in our bio! 🪔 #Diwali2024"
 ```
 ⏱️ Speed: 3.2s | 💰 Cost: $0.0008 | ⭐ Quality: 8/10
 
@@ -196,7 +196,7 @@ festive vibes to your home. Order now on ONDC! 🪔 #Diwali2024"
 ```
 "इस दिवाली, रोशनी सिर्फ दीयों की नहीं, परंपरा की भी हो! 
 हमारे हाथ से बने मिट्टी के दीये हर घर में खुशियों की रोशनी 
-लाते हैं। ONDC पर आज ही ऑर्डर करें! ✨🪔 #DiwaliVibes"
+लाते हैं। आज ही ऑर्डर करें! ✨🪔 #DiwaliVibes"
 ```
 ⏱️ Speed: 5.1s | 💰 Cost: $0.005 | ⭐ Quality: 10/10
 
@@ -204,7 +204,7 @@ festive vibes to your home. Order now on ONDC! 🪔 #Diwali2024"
 ```
 "Beautiful handmade terracotta diyas for Diwali! Traditional 
 design, eco-friendly, perfect for your festive celebrations. 
-Shop now on ONDC! 🪔✨ #Diwali #Handmade"
+Shop now! 🪔✨ #Diwali #Handmade"
 ```
 ⏱️ Speed: 1.8s | 💰 Cost: $0.0005 | ⭐ Quality: 7/10
 
@@ -217,7 +217,7 @@ Shop now on ONDC! 🪔✨ #Diwali #Handmade"
 - ✅ You want balanced cost/performance
 - ✅ You're generating 1,000+ images/month
 - ✅ You need reliable availability
-- ✅ You're building for ONDC sellers
+- ✅ You're building for small business sellers
 
 ### Choose Claude 3.5 Sonnet v2 if:
 - ✅ Quality is your top priority

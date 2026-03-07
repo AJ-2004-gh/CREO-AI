@@ -220,7 +220,7 @@ Post Context:
 Instructions:
 1. Analyze the context, target audience, and main keywords of the post.
 2. Generate 4 to 7 highly strategic hashtags specifically targeting the Indian market and demographics.
-3. Include a mix of localized tags (e.g., #VocalForLocal, #ONDC, #BengaluruStartups, #DesiCreators) alongside broad and niche trending tags.
+3. Include a mix of localized tags (e.g., #VocalForLocal, #BharatCreators, #BengaluruStartups, #DesiCreators) alongside broad and niche trending tags.
 4. For ${targetLanguage} posts, consider using both English hashtags (for broader reach) and ${targetLanguage} hashtags (for local engagement).
 5. Append these suggested hashtags to the end of the post content seamlessly (or format them as appropriate for ${post.platform}).
 6. ${languageInstruction}

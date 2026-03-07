@@ -133,7 +133,7 @@ function CopyButton({ text, className = '' }: { text: string; className?: string
             exit={{ opacity: 0, scale: 0.8 }}
             className="flex items-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             <span className="text-xs font-medium">Copy</span>
@@ -231,10 +231,9 @@ function OptimizationCard({
 /* ── Main Create Page ── */
 export default function CreatePage() {
   const router = useRouter();
-  const [mode, setMode] = useState<'simple' | 'conversational' | 'agent' | 'ondc' | 'vision'>('simple');
+  const [mode, setMode] = useState<'simple' | 'conversational' | 'agent' | 'vision'>('simple');
   const [idea, setIdea] = useState('');
-  const [ondcProductName, setOndcProductName] = useState('');
-  const [ondcTargetAudience, setOndcTargetAudience] = useState('');
+
   
   // Vision mode state
   const [visionImage, setVisionImage] = useState<File | null>(null);
@@ -503,23 +502,25 @@ export default function CreatePage() {
   };
 
   const resetConversation = async () => {
+    setError('');
     const token = getToken();
-    if (!token || !conversationId) return;
-
-    try {
-      await fetch('/api/conversation/answer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          conversation_id: conversationId,
-          action: 'reset'
-        }),
-      });
-    } catch (err) {
-      console.error('Failed to reset conversation:', err);
+    
+    if (token && conversationId) {
+      try {
+        await fetch('/api/conversation/answer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            action: 'reset'
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to reset conversation:', err);
+      }
     }
 
     setConversationId('');
@@ -567,10 +568,8 @@ export default function CreatePage() {
 
   const handleGenerate = async () => {
     let finalIdea = idea;
-    if (mode === 'ondc') {
-      if (!ondcProductName.trim() || !ondcTargetAudience.trim()) return;
-      finalIdea = `Product Name: ${ondcProductName}. Target Audience: ${ondcTargetAudience}. Write a highly converting social media post to drive sales, highlighting the product benefits. Conclude with a clear Call-To-Action (CTA) encouraging them to "Order now via ONDC" or "Link in bio". Make it sound natural and tailored to the target audience.`;
-    } else if (mode === 'vision') {
+    if (mode === 'vision') {
+
       // Vision mode uses a different API endpoint
       return handleVisionGenerate();
     } else {
@@ -647,6 +646,43 @@ export default function CreatePage() {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleGenerateImageOnly = async () => {
+    if (!post) return;
+    const token = getToken();
+    if (!token) return;
+
+    setGeneratingImage(true);
+    setError('');
+
+    try {
+      const imageRes = await fetch('/api/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          post_id: post.post_id,
+          created_at: post.created_at,
+          mode: 'generate',
+          prompt: post.content,
+        }),
+      });
+
+      if (imageRes.status === 401) { router.push('/login'); return; }
+
+      const imageData = await imageRes.json();
+      if (!imageRes.ok) throw new Error(imageData.error || 'Image generation failed');
+
+      setPost(prev => prev ? { ...prev, image_url: imageData.image_url } : null);
+    } catch (imgErr) {
+      console.error(imgErr);
+      setError(imgErr instanceof Error ? imgErr.message : 'Image generation failed');
+    } finally {
+      setGeneratingImage(false);
     }
   };
 
@@ -807,7 +843,7 @@ export default function CreatePage() {
                 : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
                 }`}
             >
-              Old Guided Mode
+              Guided Mode
             </button>
             <button
               onClick={() => setMode('agent')}
@@ -818,16 +854,6 @@ export default function CreatePage() {
             >
               <Sparkles className="w-4 h-4" /> Agent Mode
             </button>
-            <button
-              onClick={() => setMode('ondc')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                mode === 'ondc'
-                  ? 'bg-orange-500 text-white shadow-md order-0'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              🛒 ONDC Seller
-            </button>
           </div>
           <div className="text-xs text-gray-500 ml-auto">
             {mode === 'simple'
@@ -836,8 +862,6 @@ export default function CreatePage() {
               ? 'Upload an image and let AI write the perfect post'
               : mode === 'agent'
                 ? 'Interactive AI assistant to build your post'
-                : mode === 'ondc'
-                ? 'Optimized posts for ONDC product sellers'
                 : 'Legacy detailed content flow'
             }
           </div>
@@ -1203,8 +1227,8 @@ export default function CreatePage() {
         </motion.div>
       )}
 
-      {/* ── Simple / ONDC Mode ── */}
-      {['simple', 'ondc'].includes(mode) && (
+      {/* ── Simple Mode ── */}
+      {mode === 'simple' && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1356,31 +1380,7 @@ export default function CreatePage() {
                 )}
               </div>
             </div>
-            
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="ondcProductName" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Product Name
-                  </label>
-                  <Input
-                    id="ondcProductName"
-                    value={ondcProductName}
-                    onChange={(e) => setOndcProductName(e.target.value)}
-                    placeholder="e.g. Handmade Terracotta Diyas"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="ondcTargetAudience" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Target Audience
-                  </label>
-                  <Input
-                    id="ondcTargetAudience"
-                    value={ondcTargetAudience}
-                    onChange={(e) => setOndcTargetAudience(e.target.value)}
-                    placeholder="e.g. Gen Z, Housewives, Festive Shoppers"
-                  />
-                </div>
-              </div>
+
             
             {/* Visuals Section */}
             <div className="pt-6 border-t border-gray-100">
@@ -1462,7 +1462,8 @@ export default function CreatePage() {
 
             <Button
               onClick={handleGenerate}
-              disabled={generating || (mode === 'simple' ? !idea.trim() : (!ondcProductName.trim() || !ondcTargetAudience.trim()))}
+              disabled={generating || (mode === 'simple' ? !idea.trim() : false)}
+
               loading={generating}
               size="lg"
               icon={<Sparkles className="w-5 h-5 relative z-50" />}
@@ -1537,6 +1538,20 @@ export default function CreatePage() {
                   <span className="text-xs text-teal-400">This may take 10–20 seconds</span>
                 </div>
               )}
+              
+              {!post.image_url && !generatingImage && (
+                <div className="flex justify-center my-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleGenerateImageOnly}
+                    icon={<Sparkles className="w-4 h-4" />}
+                    className="shadow-sm border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800 transition-colors bg-white w-full sm:w-auto"
+                  >
+                    Generate AI Image for this Post
+                  </Button>
+                </div>
+              )}
+
               <div className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap" style={{ background: 'rgba(248,250,251,0.8)', color: '#334155', border: '1px solid rgba(0,0,0,0.05)' }}>
                 {post.content}
               </div>

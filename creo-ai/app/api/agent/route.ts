@@ -7,6 +7,7 @@ import { Platform, IndicLanguage, CulturalContext } from '@/types/post';
 import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { dynamoDb } from '@/lib/dynamoClient';
 import { PutCommand } from '@aws-sdk/lib-dynamodb';
+import { generateImage } from '@/services/imageService';
 
 const verifier = CognitoJwtVerifier.create({
   userPoolId: process.env.COGNITO_USER_POOL_ID!,
@@ -68,6 +69,8 @@ Platform: ${platform || 'General'} | Language: ${targetLanguage || 'English'} | 
    - "itinerary for Varkala trip" → destination and purpose are obvious. Don't ask "what's the benefit?"
    Only ask if genuinely missing: target audience, tone/style, or CTA. Max 3 sharp, non-obvious questions in one 'ask_questions' call.
    If you already have enough, skip questions and go straight to 'generate_post'.
+
+3. Images: You MUST provide an 'image_prompt' containing a highly detailed visual description whenever you call 'generate_post'. Social media posts require visuals.
 
 ━━━ POST WRITING STANDARDS ━━━
 When calling 'generate_post', write a LONG, DETAILED, high-quality post. Follow these platform-specific guidelines:
@@ -135,8 +138,9 @@ For ALL platforms:
             'The complete social media post text. Must be long and detailed: minimum ~1200 characters for Instagram/LinkedIn/General, packed with storytelling, specific details, and structure (short paragraphs, line breaks, lists where suitable). Twitter/X can be shorter but still punchy and well-structured.'
           ),
           suggested_hashtags: z.array(z.string()).describe('Relevant hashtags without the # symbol'),
+          image_prompt: z.string().optional().describe('A highly detailed visual prompt for generating an accompanying image. Provide this if the user asks for an image or the post relies heavily on a visual component. E.g., "A high-quality photo of a sleek toy car racing on a miniature track, dynamic lighting"'),
         }),
-        execute: async (input: { content: string; suggested_hashtags: string[] }) => {
+        execute: async (input: { content: string; suggested_hashtags: string[]; image_prompt?: string }) => {
           console.log('[Tool Call: generate_post]', {
             contentLength: input.content.length,
             hashtagCount: input.suggested_hashtags.length,
@@ -144,13 +148,22 @@ For ALL platforms:
             hashtags: input.suggested_hashtags,
           });
 
-          // Score the generated content so the UI can show the engagement breakdown
           let scores = { hook_score: 0, clarity_score: 0, cta_score: 0, final_score: 0 };
           try {
             scores = await scoreContent(input.content, (platform || 'Instagram') as Platform);
             console.log('[Agent Scores]', scores);
           } catch (err) {
             console.error('[Agent Scoring Error]', err);
+          }
+          
+          let image_url: string | undefined = undefined;
+          if (input.image_prompt) {
+            console.log('[Agent Image Gen] Generating image for prompt:', input.image_prompt);
+            try {
+              image_url = await generateImage(input.image_prompt);
+            } catch (err) {
+              console.error('[Agent Image Gen Error]', err);
+            }
           }
 
           const post = {
@@ -160,6 +173,7 @@ For ALL platforms:
             platform: (platform || 'Instagram') as Platform,
             target_language: (targetLanguage || 'English') as IndicLanguage,
             cultural_context: (culturalContext || 'None') as CulturalContext,
+            image_url,
             created_at: Date.now(),
             ...scores,
             // Only set user_id when we have a verified user

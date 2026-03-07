@@ -15,7 +15,8 @@ import {
   HelpCircle,
   LogOut,
   X,
-  Sparkles
+  Sparkles,
+  History
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -57,6 +58,12 @@ const sidebarItems: SidebarItem[] = [
     href: '/team',
     icon: <Users className="h-[18px] w-[18px]" />,
     color: 'violet',
+  },
+  {
+    label: 'History',
+    href: '/history',
+    icon: <History className="h-[18px] w-[18px]" />,
+    color: 'teal',
   },
   {
     label: 'Settings',

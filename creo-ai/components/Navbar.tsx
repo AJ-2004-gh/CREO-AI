@@ -60,6 +60,16 @@ export default function Navbar() {
               >
                 Create
               </Link>
+              <Link
+                href="/history"
+                className={`text-sm font-medium transition-colors ${
+                  pathname === '/history'
+                    ? 'text-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                History
+              </Link>
             </nav>
           )}
 

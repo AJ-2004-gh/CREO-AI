@@ -48,14 +48,6 @@ export const CONVERSATION_FLOWS: Record<string, ConversationFlow> = {
     description: 'Create engaging posts to promote your products',
     questions: [
       {
-        id: 'product-name',
-        type: 'text',
-        question: 'What is the name of your product?',
-        description: 'The specific name of what you are selling',
-        placeholder: 'e.g., Organic Honey, Handmade Jewelry, etc.',
-        required: true
-      },
-      {
         id: 'product-category',
         type: 'select',
         question: 'What category does your product belong to?',
@@ -146,29 +138,30 @@ export const CONVERSATION_FLOWS: Record<string, ConversationFlow> = {
         required: false
       }
     ],
-    finalPromptTemplate: `Create a compelling social media post for promoting a product with the following details:
+    finalPromptTemplate: `Create a highly compelling, conversion-focused social media post for promoting a product with the following details:
 
-Product Name: {product-name}
 Category: {product-category}
 Target Audience: {target-audience}
 Key Benefits: {product-benefits}
-Unique Selling Point: {unique-selling-point}
+Unique Selling Point (USP): {unique-selling-point}
 Price Range: {price-range}
-Call to Action: {call-to-action}
-Special Offer: {urgency-or-offer}
+Call to Action (CTA): {call-to-action}
+Special Offer/Urgency: {urgency-or-offer}
 
 Platform: {platform}
 Language: {language}
 Cultural Context: {cultural-context}
 
 Instructions:
-1. Write in a friendly, conversational tone that resonates with {target-audience}
-2. Highlight the key benefits naturally within the post
-3. Include a strong call-to-action for {call-to-action}
-4. If there's a special offer, create urgency around it
-5. Use appropriate emojis and cultural references for {cultural-context}
-6. Keep it engaging and authentic - avoid overly corporate language
-7. Include 3-5 relevant hashtags`
+1. Length & Depth: Write a detailed, engaging post with a word limit of around 700 words. Build a narrative rather than just listing features.
+2. Tone & Voice: Use a highly engaging, persuasive, and friendly tone tailored specifically to resonate with {target-audience}. Avoid dry, overly corporate jargon.
+3. Benefit-Driven Narrative: Weave the {product-benefits} and {unique-selling-point} naturally into a storytelling format that shows the reader exactly how this product improves their life.
+4. Hook the Reader: Start with a powerful, attention-grabbing opening sentence or question that stops the scroll.
+5. Offer & Urgency: If a {urgency-or-offer} is provided, seamlessly integrate it to create a strong sense of FOMO (Fear Of Missing Out) and drive immediate action.
+6. Cultural Nuance: Thoughtfully incorporate culturally relevant references, idioms, and appropriate emojis for {cultural-context} without forcing it.
+7. Clear Call-to-Action: Conclude with a crystal clear, action-oriented CTA guiding users to {call-to-action}.
+8. Formatting: Use proper spacing, line breaks, and bullet points to ensure the content is easily readable and scannable.
+9. Hashtags: Include 5-7 highly targeted, trending, and niche-specific hashtags at the end.`
   },
 
   'service-business': {
@@ -245,13 +238,13 @@ Instructions:
         required: true
       }
     ],
-    finalPromptTemplate: `Create a professional social media post for promoting a service business with the following details:
+    finalPromptTemplate: `Create a highly professional, authority-building social media post for promoting a service business with the following details:
 
 Service Type: {service-type}
-Experience: {experience}
-Service Area: {service-area}
+Experience/Authority: {experience}
+Service Area/Location: {service-area}
 Target Clients: {target-clients}
-Key Strengths: {key-expertise}
+Key Strengths & Expertise: {key-expertise}
 Booking Process: {booking-process}
 
 Platform: {platform}
@@ -259,13 +252,15 @@ Language: {language}
 Cultural Context: {cultural-context}
 
 Instructions:
-1. Write in a professional yet approachable tone
-2. Emphasize your experience and expertise
-3. Clearly explain how clients can benefit from your service
-4. Include a clear call-to-action for booking
-5. Mention your service area clearly
-6. Use appropriate professional language with cultural sensitivity
-7. Include 3-5 relevant hashtags for your industry`
+1. Length & Depth: Write a comprehensive, value-driven post with a word limit of around 700 words. Use this space to build trust and showcase deep expertise.
+2. Tone & Voice: Maintain a highly professional, trustworthy, yet accessible and empathetic tone that specifically addresses the needs of {target-clients}.
+3. Establish Authority: Naturally highlight the {experience} and {key-expertise} to position the service provider as an industry leader and the best solution to the client's problem.
+4. Problem-Solution Framework: Frame the post around common pain points the target clients face, offering the {service-type} as the definitive answer.
+5. Local/Targeted Appeal: Ensure the {service-area} is explicitly mentioned so local or targeted prospects know they are covered.
+6. Frictionless Booking: Explicitly and clearly explain exactly how clients can engage using the {booking-process}. Remove any doubt about the next steps.
+7. Cultural Relevance: Use appropriate professional language, respect, and subtle cultural nuances relevant to {cultural-context}.
+8. Formatting: Employ clean formatting, utilizing bullet points for key strengths and white space to make reading effortless.
+9. Hashtags: Add 5-7 industry-specific and localized hashtags to maximize discoverability.`
   },
 
   'event-promotion': {
@@ -329,27 +324,29 @@ Instructions:
         required: true
       }
     ],
-    finalPromptTemplate: `Create an exciting social media post to promote an event with the following details:
+    finalPromptTemplate: `Create an electrifying, high-energy social media post to promote an upcoming event with the following details:
 
 Event Type: {event-type}
 Event Name: {event-name}
 Date & Time: {event-date}
 Location: {event-location}
-Main Highlights: {event-highlights}
-Registration: {registration-details}
+Main Attractions/Highlights: {event-highlights}
+Registration/Ticketing: {registration-details}
 
 Platform: {platform}
 Language: {language}
 Cultural Context: {cultural-context}
 
 Instructions:
-1. Create excitement and urgency about the event
-2. Highlight the most attractive features
-3. Include all essential details (date, time, location)
-4. Make the registration process clear and simple
-5. Use event-appropriate emojis and cultural references
-6. Create FOMO (fear of missing out) if appropriate
-7. Include 3-5 relevant event hashtags`
+1. Length & Depth: Craft a detailed, immersive post with a word limit of around 700 words. Paint a vivid picture of the event experience.
+2. Tone & Voice: Bring immense enthusiasm, excitement, and energy. Make the reader feel like this is a must-attend, unmissable experience.
+3. Hook & FOMO: Start with a captivating hook. Leverage FOMO (Fear Of Missing Out) to make the target audience feel the urgency to attend.
+4. Highlight Value: Elaborate on the {event-highlights}. Don't just list them; describe the value and the experience attendees will walk away with.
+5. Absolute Clarity: Ensure {event-date} and {event-location} are impossible to miss, formatted clearly and prominently.
+6. Seamless Action: Provide clear, unambiguous instructions on how to secure a spot via {registration-details}. Encourage immediate action.
+7. Culturally Resonant: Deeply integrate the {cultural-context} through suitable metaphors, festive/event-specific celebratory tones, and relevant emojis.
+8. Accessibility: Structure the lengthy text using line breaks, bold text (if supported by the platform's conventions), or emojis as bullet points.
+9. Hashtags: Include 5-7 event-specific, localized, and trending hashtags.`
   },
 
   'general-content': {
@@ -417,26 +414,28 @@ Instructions:
         required: true
       }
     ],
-    finalPromptTemplate: `Create an engaging social media post with the following details:
+    finalPromptTemplate: `Create a highly engaging, value-packed social media post with the following details:
 
-Purpose: {content-purpose}
-Main Topic: {main-topic}
+Primary Purpose: {content-purpose}
+Main Topic/Theme: {main-topic}
 Target Audience: {target-audience}
 Desired Tone: {desired-tone}
-Key Points: {key-points}
+Core Key Points to Cover: {key-points}
 
 Platform: {platform}
 Language: {language}
 Cultural Context: {cultural-context}
 
 Instructions:
-1. Write in a {desired-tone} tone that appeals to {target-audience}
-2. Structure the content to achieve {content-purpose}
-3. Include all key points naturally and engagingly
-4. Use appropriate language and cultural references
-5. Make it shareable and engaging for the platform
-6. Include a relevant call-to-action if appropriate
-7. Add 3-5 relevant hashtags`
+1. Length & Depth: Write a substantial, deep-dive post with a word limit of around 700 words. Provide genuine value, thorough insights, or a captivating narrative depending on the topic.
+2. Tone & Voice: Strictly adhere to a {desired-tone} tone while ensuring every sentence is tailored to capture the attention of {target-audience}.
+3. Narrative Structure: Weave the {key-points} into a cohesive, flowing story or a well-structured educational piece. Ensure a logical progression from the hook to the conclusion.
+4. Purpose-Driven: Keep the {content-purpose} at the core of the post. Every paragraph should serve this primary objective (e.g., educating, inspiring, or entertaining).
+5. Strong Hook & Conclusion: Open with an scroll-stopping hook (a provocative question, surprising stat, or bold statement). End with a thought-provoking conclusion or question to drive comments and engagement.
+6. Cultural Alignment: Thoughtfully align the language, figures of speech, and emojis with {cultural-context} to create local/cultural resonance.
+7. Formatting: Use generous paragraph spacing, listicles, or logical breaks to ensure the content is easily digestible and visually appealing on social feeds.
+8. Call-to-Action: Include a relevant CTA (like asking a question to prompt discussion, or directing to a link) aligned with the purpose.
+9. Hashtags: Conclude with 5-7 highly relevant hashtags spanning broad and niche categories.`
   }
 };
 
