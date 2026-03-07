@@ -18,7 +18,10 @@ import {
   Copy,
   CheckCheck,
   Square,
-  Mic
+  Mic,
+  Brain,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -48,18 +51,59 @@ interface GeneratePostResult {
   target_language?: string;
   cultural_context?: string;
   created_at?: number;
+  image_url?: string;
 }
 
 // ── Helper: extract text from message parts ────────────────────────────────
 
-function getTextFromParts(parts: Array<{ type: string; text?: string }>): string {
-  return parts
+function parseMessageContent(parts: Array<{ type: string; text?: string }>) {
+  const fullText = parts
     .filter((p) => p.type === 'text' && p.text)
     .map((p) => p.text!)
-    .join('')
-    // Strip Claude's internal <thinking>...</thinking> blocks before rendering
-    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
-    .trim();
+    .join('');
+
+  const thinkingBlocks: string[] = [];
+  
+  const content = fullText.replace(/<thinking>([\s\S]*?)(?:<\/thinking>|$)/gi, (match, p1) => {
+    thinkingBlocks.push(p1.trim());
+    return '';
+  }).trim();
+
+  return { thinking: thinkingBlocks.join('\n\n'), content };
+}
+
+function ThinkingBlock({ content }: { content: string }) {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
+    <div className="flex justify-start mb-2 mt-2">
+       <div className="w-full max-w-[85%] rounded-2xl border border-indigo-100 shadow-sm overflow-hidden text-sm bg-indigo-50/30">
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50/50 hover:bg-indigo-100/50 transition-colors"
+        >
+          <div className="flex items-center gap-2 text-indigo-500 font-semibold font-sans text-xs uppercase tracking-wider">
+            <Brain className="w-4 h-4" /> 
+            <span>Agent Thoughts</span>
+          </div>
+          {isOpen ? <ChevronUp className="w-4 h-4 text-indigo-400" /> : <ChevronDown className="w-4 h-4 text-indigo-400" />}
+        </button>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="px-4 py-3 text-indigo-800 font-medium leading-relaxed italic"
+            >
+              <div className="overflow-hidden">
+                {content}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+       </div>
+    </div>
+  );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -303,7 +347,7 @@ export function AgentUI({ platform, targetLanguage, culturalContext, onPostGener
 
         {messages.map((m) => {
           // v6: part.type is 'text' or 'tool-{toolName}'
-          const textContent = getTextFromParts(m.parts as any);
+          const { thinking, content: textContent } = parseMessageContent(m.parts as any);
           const toolParts = (m.parts as any[]).filter(
             (p) => p.type?.startsWith('tool-')
           );
@@ -320,6 +364,8 @@ export function AgentUI({ platform, targetLanguage, culturalContext, onPostGener
                 className="space-y-4"
               >
                 {/* ── Text content (hidden when generate_post is present) ── */}
+                {thinking && !hasGeneratePost && <ThinkingBlock content={thinking} />}
+                
                 {textContent && !hasGeneratePost && (
                   <div className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
@@ -546,6 +592,13 @@ function GeneratedPostCard({ result }: { result: GeneratePostResult }) {
             )}
           </button>
         </div>
+
+        {/* Post image */}
+        {result.image_url && (
+            <div className="w-full rounded-xl overflow-hidden bg-gray-100 border border-green-100 shadow-sm relative group">
+              <img src={result.image_url} alt="Generated visual" className="w-full h-auto object-cover max-h-80" />
+            </div>
+        )}
 
         {/* Post content */}
         <div className="bg-white rounded-xl p-4 border border-green-100 shadow-inner">

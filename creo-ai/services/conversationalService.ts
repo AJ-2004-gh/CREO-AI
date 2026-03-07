@@ -15,14 +15,15 @@ import { generateContent } from './aiService';
 import { generateCulturalPrompt } from '@/types/culturalContext';
 
 export class ConversationalService {
-  private static instance: ConversationalService;
   private activeConversations: Map<string, ConversationState> = new Map();
 
   static getInstance(): ConversationalService {
-    if (!ConversationalService.instance) {
-      ConversationalService.instance = new ConversationalService();
+    // Determine whether to use globalThis to preserve state across hot reloads in Next.js dev
+    const globalAny = global as any;
+    if (!globalAny.__conversationalService) {
+      globalAny.__conversationalService = new ConversationalService();
     }
-    return ConversationalService.instance;
+    return globalAny.__conversationalService;
   }
 
   /**

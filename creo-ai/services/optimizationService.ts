@@ -121,16 +121,21 @@ async function runOptimization(
 export async function improveHook(post_id: string, user_id: string): Promise<OptimizationResult> {
     const post = await fetchPost(post_id, user_id);
     const culturalContext = post.cultural_context || 'None';
+    const targetLanguage = post.target_language || 'English';
     const culturalPrompt = generateCulturalPrompt(culturalContext);
+
+    const languageInstruction = targetLanguage === 'English'
+        ? 'Write the improved content in English.'
+        : `CRITICAL: Write the ENTIRE improved content in ${targetLanguage} language using proper ${targetLanguage} script. Do not mix English and ${targetLanguage}. The entire post must be in ${targetLanguage}.`;
 
     const prompt = `You are an expert social media copywriter specializing in viral content and culturally resonant messaging. Your task is to dramatically improve the opening "hook" of the following ${post.platform} post.
 
-Original post:
+Original post (in ${targetLanguage}):
 "${post.content}"
 
 Post Context:
 - Platform: ${post.platform}
-- Target Language: ${post.target_language}
+- Target Language: ${targetLanguage}
 - Cultural Context: ${culturalContext}${culturalPrompt}
 
 Instructions:
@@ -139,10 +144,13 @@ Instructions:
 3. Ensure the tone matches the rest of the post and is suitable for ${post.platform}.
 4. Do not alter the core message or the call-to-action; focus solely on making the beginning irresistible.
 5. ${culturalContext !== 'None' ? `Incorporate culturally relevant elements from ${culturalContext} to make the hook more relatable and engaging for Indian audiences. Use appropriate cultural emojis, slang, or references that resonate with this context.` : 'Keep the tone professional and engaging without specific cultural references.'}
+6. ${languageInstruction}
 
-Return ONLY valid JSON in this exact format (no markdown blocks or explanations, just the JSON). Ensure that any newlines or quotes inside string values are properly escaped (e.g. \\n):
+CRITICAL: Return ONLY a valid JSON object. No markdown, no code blocks, no explanations. Just pure JSON.
+
+Required JSON format:
 {
-  "improved_content": "the full rewritten post with the newly optimized powerful hook"
+  "improved_content": "the full rewritten post in ${targetLanguage} with the newly optimized powerful hook"
 }`;
 
     return runOptimization(post, 'hook', prompt);
@@ -153,21 +161,35 @@ Return ONLY valid JSON in this exact format (no markdown blocks or explanations,
  */
 export async function improveCTA(post_id: string, user_id: string): Promise<OptimizationResult> {
     const post = await fetchPost(post_id, user_id);
+    const targetLanguage = post.target_language || 'English';
+    const culturalContext = post.cultural_context || 'None';
+
+    const languageInstruction = targetLanguage === 'English'
+        ? 'Write the improved content in English.'
+        : `CRITICAL: Write the ENTIRE improved content in ${targetLanguage} language using proper ${targetLanguage} script. Do not mix English and ${targetLanguage}. The entire post must be in ${targetLanguage}.`;
 
     const prompt = `You are an expert social media copywriter specializing in conversion rate optimization and community engagement. Your task is to improve the Call-To-Action (CTA) of the following ${post.platform} post.
 
-Original post:
+Original post (in ${targetLanguage}):
 "${post.content}"
+
+Post Context:
+- Platform: ${post.platform}
+- Target Language: ${targetLanguage}
+- Cultural Context: ${culturalContext}
 
 Instructions:
 1. Review the post content.
 2. Rewrite the ending (or weave throughout) to include a highly effective, clear, and compelling CTA.
 3. Depending on the post's context, the CTA could encourage commenting, sharing, clicking a link, or saving the post. Ensure the CTA feels natural and drives immediate action.
 4. Keep the original opening and body intact as much as possible, only modifying the text to integrate the new CTA smoothly.
+5. ${languageInstruction}
 
-Return ONLY valid JSON in this exact format (no markdown blocks or explanations, just the JSON). Ensure that any newlines or quotes inside string values are properly escaped (e.g. \\n):
+CRITICAL: Return ONLY a valid JSON object. No markdown, no code blocks, no explanations. Just pure JSON.
+
+Required JSON format:
 {
-  "improved_content": "the full rewritten post with the optimized CTA"
+  "improved_content": "the full rewritten post in ${targetLanguage} with the optimized CTA"
 }`;
 
     return runOptimization(post, 'cta', prompt);
@@ -178,21 +200,36 @@ Return ONLY valid JSON in this exact format (no markdown blocks or explanations,
  */
 export async function suggestHashtags(post_id: string, user_id: string): Promise<OptimizationResult> {
     const post = await fetchPost(post_id, user_id);
+    const targetLanguage = post.target_language || 'English';
+    const culturalContext = post.cultural_context || 'None';
+
+    const languageInstruction = targetLanguage === 'English'
+        ? 'Keep the post content in English. Hashtags can be in English or a mix.'
+        : `CRITICAL: Keep the post content in ${targetLanguage} language using proper ${targetLanguage} script. Hashtags can be in English or ${targetLanguage} as appropriate for discoverability.`;
 
     const prompt = `You are an algorithm and discoverability expert for social media platforms focusing on Indian demographics. Your task is to provide the optimal mix of hashtags for the following ${post.platform} post.
 
-Post content:
+Post content (in ${targetLanguage}):
 "${post.content}"
+
+Post Context:
+- Platform: ${post.platform}
+- Target Language: ${targetLanguage}
+- Cultural Context: ${culturalContext}
 
 Instructions:
 1. Analyze the context, target audience, and main keywords of the post.
 2. Generate 4 to 7 highly strategic hashtags specifically targeting the Indian market and demographics.
-3. Include a mix of localized tags (e.g., #VocalForLocal, #ONDC, #BengaluruStartups, #DesiCreators) alongside broad and niche trending tags.
-4. Append these suggested hashtags to the end of the post content seamlessly (or format them as appropriate for ${post.platform}).
+3. Include a mix of localized tags (e.g., #VocalForLocal, #BharatCreators, #BengaluruStartups, #DesiCreators) alongside broad and niche trending tags.
+4. For ${targetLanguage} posts, consider using both English hashtags (for broader reach) and ${targetLanguage} hashtags (for local engagement).
+5. Append these suggested hashtags to the end of the post content seamlessly (or format them as appropriate for ${post.platform}).
+6. ${languageInstruction}
 
-Return ONLY valid JSON in this exact format (no markdown blocks or explanations, just the JSON). Ensure that any newlines or quotes inside string values are properly escaped (e.g. \\n):
+CRITICAL: Return ONLY a valid JSON object. No markdown, no code blocks, no explanations. Just pure JSON.
+
+Required JSON format:
 {
-  "improved_content": "the original post text with the new hashtags appended correctly at the bottom",
+  "improved_content": "the original post text in ${targetLanguage} with the new hashtags appended correctly at the bottom",
   "suggested_hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"]
 }`;
 

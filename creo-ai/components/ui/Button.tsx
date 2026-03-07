@@ -67,7 +67,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute inset-0 z-10 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -77,7 +77,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         
         <motion.div
-          className={cn('flex items-center gap-2', loading && 'opacity-0')}
+          className={cn('relative z-10 flex items-center gap-2', loading && 'opacity-0')}
           animate={{ opacity: loading ? 0 : 1 }}
         >
           {icon && iconPosition === 'left' && (

@@ -133,7 +133,7 @@ function CopyButton({ text, className = '' }: { text: string; className?: string
             exit={{ opacity: 0, scale: 0.8 }}
             className="flex items-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             <span className="text-xs font-medium">Copy</span>
@@ -231,10 +231,14 @@ function OptimizationCard({
 /* ── Main Create Page ── */
 export default function CreatePage() {
   const router = useRouter();
-  const [mode, setMode] = useState<'simple' | 'conversational' | 'agent' | 'ondc'>('simple');
+  const [mode, setMode] = useState<'simple' | 'conversational' | 'agent' | 'vision'>('simple');
   const [idea, setIdea] = useState('');
-  const [ondcProductName, setOndcProductName] = useState('');
-  const [ondcTargetAudience, setOndcTargetAudience] = useState('');
+
+  
+  // Vision mode state
+  const [visionImage, setVisionImage] = useState<File | null>(null);
+  const [visionImagePreview, setVisionImagePreview] = useState<string | null>(null);
+  const [visionContext, setVisionContext] = useState('');
   const [platform, setPlatform] = useState<Platform>('LinkedIn');
   const [targetLanguage, setTargetLanguage] = useState<IndicLanguage>('English');
   const [culturalContext, setCulturalContext] = useState<CulturalContext>('None');
@@ -381,6 +385,14 @@ export default function CreatePage() {
     }
   };
 
+  const handleVisionImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVisionImage(file);
+      setVisionImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   // FIX: Guard localStorage access for SSR safety
   const getToken = (): string | null => {
     if (typeof window === 'undefined') return null;
@@ -506,23 +518,25 @@ export default function CreatePage() {
   };
 
   const resetConversation = async () => {
+    setError('');
     const token = getToken();
-    if (!token || !conversationId) return;
-
-    try {
-      await fetch('/api/conversation/answer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          conversation_id: conversationId,
-          action: 'reset'
-        }),
-      });
-    } catch (err) {
-      console.error('Failed to reset conversation:', err);
+    
+    if (token && conversationId) {
+      try {
+        await fetch('/api/conversation/answer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            action: 'reset'
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to reset conversation:', err);
+      }
     }
 
     setConversationId('');
@@ -570,9 +584,10 @@ export default function CreatePage() {
 
   const handleGenerate = async () => {
     let finalIdea = idea;
-    if (mode === 'ondc') {
-      if (!ondcProductName.trim() || !ondcTargetAudience.trim()) return;
-      finalIdea = `Product Name: ${ondcProductName}. Target Audience: ${ondcTargetAudience}. Write a highly converting social media post to drive sales, highlighting the product benefits. Conclude with a clear Call-To-Action (CTA) encouraging them to "Order now via ONDC" or "Link in bio". Make it sound natural and tailored to the target audience.`;
+    if (mode === 'vision') {
+
+      // Vision mode uses a different API endpoint
+      return handleVisionGenerate();
     } else {
       if (!idea.trim()) return;
     }
@@ -644,6 +659,100 @@ export default function CreatePage() {
         }
       }
     } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleGenerateImageOnly = async () => {
+    if (!post) return;
+    const token = getToken();
+    if (!token) return;
+
+    setGeneratingImage(true);
+    setError('');
+
+    try {
+      const imageRes = await fetch('/api/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          post_id: post.post_id,
+          created_at: post.created_at,
+          mode: 'generate',
+          prompt: post.content,
+        }),
+      });
+
+      if (imageRes.status === 401) { router.push('/login'); return; }
+
+      const imageData = await imageRes.json();
+      if (!imageRes.ok) throw new Error(imageData.error || 'Image generation failed');
+
+      setPost(prev => prev ? { ...prev, image_url: imageData.image_url } : null);
+    } catch (imgErr) {
+      console.error(imgErr);
+      setError(imgErr instanceof Error ? imgErr.message : 'Image generation failed');
+    } finally {
+      setGeneratingImage(false);
+    }
+  };
+
+  const handleVisionGenerate = async () => {
+    if (!visionImage) return;
+
+    const token = getToken();
+    if (!token) return;
+
+    setGenerating(true);
+    setError('');
+    setPost(null);
+    setOptimizationResult(null);
+
+    try {
+      // Convert image to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(visionImage);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
+
+      const res = await fetch('/api/vision-generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          image_base64: base64,
+          platform,
+          target_language: targetLanguage,
+          cultural_context: culturalContext,
+          additional_context: visionContext.trim() || undefined,
+        }),
+      });
+
+      if (res.status === 401) { router.push('/login'); return; }
+
+      // Better error handling for non-JSON responses
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Server returned an invalid response. Check console for details.');
+      }
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Vision generation failed');
+
+      setPost(data);
+    } catch (err) {
+      console.error('Vision generation error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setGenerating(false);
@@ -722,7 +831,7 @@ export default function CreatePage() {
         {/* Mode Toggle */}
         <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(20,184,166,0.1)', backdropFilter: 'blur(8px)' }}>
           <span className="text-sm font-semibold text-slate-600">Experience:</span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setMode('simple')}
               className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
@@ -734,13 +843,23 @@ export default function CreatePage() {
               ⚡ Quick Mode
             </button>
             <button
+              onClick={() => setMode('vision')}
+              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"
+              style={mode === 'vision'
+                ? { background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', color: 'white', boxShadow: '0 4px 14px rgba(139,92,246,0.35)' }
+                : { background: 'white', color: '#475569', border: '1px solid #e2e8f0' }
+              }
+            >
+              <Image className="w-4 h-4" /> Image-to-Post
+            </button>
+            <button
               onClick={() => setMode('conversational')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'conversational'
                 ? 'bg-blue-500 text-white shadow-md'
                 : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
                 }`}
             >
-              Old Guided Mode
+              Guided Mode
             </button>
             <button
               onClick={() => setMode('agent')}
@@ -751,24 +870,14 @@ export default function CreatePage() {
             >
               <Sparkles className="w-4 h-4" /> Agent Mode
             </button>
-            <button
-              onClick={() => setMode('ondc')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                mode === 'ondc'
-                  ? 'bg-orange-500 text-white shadow-md order-0'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-400'
-              }`}
-            >
-              🛒 ONDC Seller
-            </button>
           </div>
           <div className="text-xs text-gray-500 ml-auto">
             {mode === 'simple'
               ? 'Perfect for quick content creation'
+              : mode === 'vision'
+              ? 'Upload an image and let AI write the perfect post'
               : mode === 'agent'
                 ? 'Interactive AI assistant to build your post'
-                : mode === 'ondc'
-                ? 'Optimized posts for ONDC product sellers'
                 : 'Legacy detailed content flow'
             }
           </div>
@@ -949,8 +1058,193 @@ export default function CreatePage() {
         </motion.div>
       )}
 
-      {/* ── Simple / ONDC Mode ── */}
-      {['simple', 'ondc'].includes(mode) && (
+      {/* ── Vision Mode (Image-to-Post) ── */}
+      {mode === 'vision' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <Card className="p-6 sm:p-8 space-y-6 sm:space-y-8">
+            {/* Info Banner */}
+            <div className="p-4 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.08), rgba(124,58,237,0.06))', border: '1px solid rgba(139,92,246,0.2)' }}>
+              <div className="flex items-start gap-3">
+                <Image className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-purple-900 mb-1">AI Vision-Powered Content Generation</p>
+                  <p className="text-xs text-purple-700">Upload a photo of your product, shop, or any visual content. Our AI will analyze the image and automatically generate a compelling social media post tailored to your platform and audience.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Platform selector */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Platform</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {PLATFORMS.map((p) => (
+                  <motion.button
+                    key={p}
+                    onClick={() => setPlatform(p)}
+                    className="relative p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200"
+                    style={platform === p
+                      ? { background: 'rgba(139,92,246,0.06)', borderColor: '#8b5cf6', boxShadow: '0 4px 14px rgba(139,92,246,0.15)' }
+                      : { background: 'white', borderColor: '#e2e8f0' }
+                    }
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <div className="text-center space-y-2">
+                      <span className="text-xl sm:text-2xl">{PLATFORM_META[p].icon}</span>
+                      <div>
+                        <p className="font-semibold text-sm" style={{ color: platform === p ? '#7c3aed' : '#475569' }}>
+                          {p}
+                        </p>
+                        <p className="text-xs" style={{ color: platform === p ? '#8b5cf6' : '#94a3b8' }}>
+                          {PLATFORM_META[p].desc}
+                        </p>
+                      </div>
+                    </div>
+                    {platform === p && (
+                      <motion.div
+                        className="absolute inset-0 rounded-2xl pointer-events-none"
+                        style={{ border: '2px solid #8b5cf6' }}
+                        initial={{ scale: 0.95 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Language selector */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Target Language</label>
+              <div className="relative">
+                <select
+                  value={targetLanguage}
+                  onChange={(e) => setTargetLanguage(e.target.value as IndicLanguage)}
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 appearance-none cursor-pointer hover:border-purple-300 transition-all"
+                >
+                  {LANGUAGES.map((lang) => (
+                    <option key={lang} value={lang}>
+                      {LANGUAGE_META[lang].native} ({lang})
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Cultural Context selector */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Cultural Context (Optional)</label>
+              <div className="relative">
+                <select
+                  value={culturalContext}
+                  onChange={(e) => setCulturalContext(e.target.value as CulturalContext)}
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-2xl text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 appearance-none cursor-pointer hover:border-purple-300 transition-all"
+                >
+                  {CULTURAL_CONTEXTS.map((context) => (
+                    <option key={context} value={context}>
+                      {CULTURAL_CONTEXT_META[context].icon} {context} - {CULTURAL_CONTEXT_META[context].desc}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-3 sm:mb-4">Upload Your Image</label>
+              <div className="border-2 border-dashed border-purple-200 rounded-2xl p-8 text-center hover:bg-purple-50/50 hover:border-purple-400 transition-all relative group">
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  onChange={handleVisionImageUpload}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                {visionImagePreview ? (
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="relative">
+                      <img src={visionImagePreview} alt="Preview" className="max-h-64 w-auto rounded-xl shadow-lg" />
+                      <div className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                        <Check className="w-3 h-3" />
+                        Ready
+                      </div>
+                    </div>
+                    <span className="text-sm text-purple-600 font-medium">Click to change image</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center text-gray-500 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                      <Upload className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <div>
+                      <span className="text-base font-semibold text-gray-700">Click to upload your image</span>
+                      <p className="text-xs text-gray-400 mt-1">PNG, JPG, WebP up to 10MB</p>
+                      <p className="text-xs text-purple-600 mt-2 font-medium">Product photos, shop images, or any visual content</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Context (Optional) */}
+            <div>
+              <label htmlFor="visionContext" className="block text-sm font-semibold text-gray-700 mb-3 sm:mb-4">
+                Additional Context (Optional)
+              </label>
+              <Textarea
+                id="visionContext"
+                value={visionContext}
+                onChange={(e) => setVisionContext(e.target.value)}
+                rows={3}
+                placeholder="Add any extra details to help AI understand your image better... e.g., 'This is our new summer collection' or 'Handmade with organic materials'"
+                className="resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Optional: Provide context about your product, target audience, or key selling points
+              </p>
+            </div>
+
+            {error && (
+              <motion.div
+                className="p-4 bg-red-50 border border-red-200 rounded-2xl"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <p className="text-red-700 text-sm font-medium">{error}</p>
+              </motion.div>
+            )}
+
+            <Button
+              onClick={handleGenerate}
+              disabled={generating || !visionImage}
+              loading={generating}
+              size="lg"
+              icon={<Sparkles className="w-5 h-5" />}
+              className="w-full shadow-lg hover:shadow-xl"
+              style={!visionImage ? {} : { background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' }}
+            >
+              {generating ? 'Analyzing Image & Generating...' : 'Generate Post from Image'}
+            </Button>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* ── Simple Mode ── */}
+      {mode === 'simple' && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1115,31 +1409,7 @@ export default function CreatePage() {
                 )}
               </div>
             </div>
-            
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="ondcProductName" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Product Name
-                  </label>
-                  <Input
-                    id="ondcProductName"
-                    value={ondcProductName}
-                    onChange={(e) => setOndcProductName(e.target.value)}
-                    placeholder="e.g. Handmade Terracotta Diyas"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="ondcTargetAudience" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Target Audience
-                  </label>
-                  <Input
-                    id="ondcTargetAudience"
-                    value={ondcTargetAudience}
-                    onChange={(e) => setOndcTargetAudience(e.target.value)}
-                    placeholder="e.g. Gen Z, Housewives, Festive Shoppers"
-                  />
-                </div>
-              </div>
+
             
             {/* Visuals Section */}
             <div className="pt-6 border-t border-gray-100">
@@ -1221,7 +1491,8 @@ export default function CreatePage() {
 
             <Button
               onClick={handleGenerate}
-              disabled={generating || (mode === 'simple' ? !idea.trim() : (!ondcProductName.trim() || !ondcTargetAudience.trim()))}
+              disabled={generating || (mode === 'simple' ? !idea.trim() : false)}
+
               loading={generating}
               size="lg"
               icon={<Sparkles className="w-5 h-5 relative z-50" />}
@@ -1296,6 +1567,20 @@ export default function CreatePage() {
                   <span className="text-xs text-teal-400">This may take 10–20 seconds</span>
                 </div>
               )}
+              
+              {!post.image_url && !generatingImage && (
+                <div className="flex justify-center my-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleGenerateImageOnly}
+                    icon={<Sparkles className="w-4 h-4" />}
+                    className="shadow-sm border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800 transition-colors bg-white w-full sm:w-auto"
+                  >
+                    Generate AI Image for this Post
+                  </Button>
+                </div>
+              )}
+
               <div className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap" style={{ background: 'rgba(248,250,251,0.8)', color: '#334155', border: '1px solid rgba(0,0,0,0.05)' }}>
                 {post.content}
               </div>

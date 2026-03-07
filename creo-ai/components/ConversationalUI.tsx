@@ -316,7 +316,7 @@ export function ConversationalFlow({
       {/* Current Question */}
       <AnimatePresence mode="wait">
         {currentQuestion && (
-          <Card className="p-6">
+          <Card key={currentQuestion.id} className="p-6">
             <ConversationalQuestion
               question={currentQuestion}
               answer={conversation.answers[currentQuestion.id]}

@@ -1,0 +1,39 @@
+# Environment Variables for AWS Amplify
+# Copy these to Amplify Console -> Environment variables
+
+# AWS Cognito Configuration
+COGNITO_DOMAIN=us-east-1k82zi1ywn.auth.us-east-1.amazoncognito.com
+COGNITO_CLIENT_ID=4b9em2599sm42256qpnork0817
+COGNITO_CLIENT_SECRET=12s5l4fsmsb7qukitla0c608c41sot80g27qh7te4a67aagdtj5s
+COGNITO_USER_POOL_ID=us-east-1_K82ZI1YWn
+
+# Public variables for client-side
+NEXT_PUBLIC_COGNITO_DOMAIN=us-east-1k82zi1ywn.auth.us-east-1.amazoncognito.com
+NEXT_PUBLIC_COGNITO_CLIENT_ID=4b9em2599sm42256qpnork0817
+
+# AWS Configuration
+AWS_REGION=us-east-1
+
+# IMPORTANT: DO NOT add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY here
+# Instead, attach an IAM role to Amplify with these permissions:
+# - AmazonBedrockFullAccess
+# - AmazonDynamoDBFullAccess
+# - AmazonS3FullAccess
+# - AmazonCognitoPowerUser
+
+# DynamoDB Tables
+POSTS_TABLE=Posts
+OPTIMIZATIONS_TABLE=Optimizations
+
+# Bedrock Model Configuration
+BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
+IMAGE_MODEL_ID=amazon.nova-canvas-v1:0
+
+# Vision Model Priority
+VISION_MODEL_PRIORITY=nova-pro,claude-sonnet,claude-haiku
+
+# S3 Configuration
+S3_BUCKET_NAME=creo-ai-images-800c9f5e
+
+# Application URL (UPDATE THIS after deployment with your Amplify URL)
+NEXT_PUBLIC_BASE_URL=https://main.xxxxxx.amplifyapp.com
