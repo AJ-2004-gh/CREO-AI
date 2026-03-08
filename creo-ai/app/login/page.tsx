@@ -67,9 +67,10 @@ export default function LoginPage() {
   const handleCognitoLogin = () => {
     localStorage.removeItem('creo_token');
     localStorage.removeItem('creo_user');
-    const redirectUri = 'http://localhost:3000/api/auth/callback';
-    const domain = 'us-east-1k82zi1ywn.auth.us-east-1.amazoncognito.com';
-    const clientId = '4b9em2599sm42256qpnork0817';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const redirectUri = `${baseUrl}/api/auth/callback`;
+    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'us-east-1k82zi1ywn.auth.us-east-1.amazoncognito.com';
+    const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '4b9em2599sm42256qpnork0817';
     const authUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = authUrl;
   };
