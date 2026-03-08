@@ -117,8 +117,30 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         });
     } catch (error) {
         console.error('[/api/vision-generate] Error:', error);
+        console.error('[/api/vision-generate] Error details:', {
+            name: error instanceof Error ? error.name : 'Unknown',
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+        });
+        
         const message = error instanceof Error ? error.message : 'Internal server error';
-        return res.status(500).json({ error: message });
+        
+        // Provide more helpful error messages
+        let userMessage = message;
+        if (message.includes('access denied') || message.includes('Access Denied')) {
+            userMessage = 'AWS Bedrock access denied. Please enable model access in AWS Bedrock Console.';
+        } else if (message.includes('not found') || message.includes('not available')) {
+            userMessage = 'Vision model not available. Please check VISION_MODEL_PRIORITY configuration.';
+        } else if (message.includes('credentials')) {
+            userMessage = 'AWS credentials error. Please check CREO_AWS_* environment variables.';
+        } else if (message.includes('All vision models failed')) {
+            userMessage = 'All vision models failed. Please enable model access in AWS Bedrock Console (us-east-1 region).';
+        }
+        
+        return res.status(500).json({ 
+            error: userMessage,
+            details: message,
+        });
     }
 }
 
