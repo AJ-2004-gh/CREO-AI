@@ -5,13 +5,13 @@ import {
 } from '@aws-sdk/client-bedrock-runtime';
 
 const config: BedrockRuntimeClientConfig = {
-    region: process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+    region: process.env.CREO_REGION || process.env.NEXT_PUBLIC_REGION || 'us-east-1',
 };
 
-if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY) {
+if (process.env.CREO_ACCESS_KEY_ID && process.env.CREO_SECRET_ACCESS_KEY) {
     config.credentials = {
-        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.CREO_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_SECRET_ACCESS_KEY,
     };
 }
 
