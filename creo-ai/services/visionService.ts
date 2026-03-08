@@ -8,8 +8,11 @@ import { Platform, CulturalContext } from '@/types/post';
 import { generateCulturalPrompt } from '@/types/culturalContext';
 
 const bedrockClient = new BedrockRuntimeClient({
-    region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-    // Credentials will be automatically loaded from IAM role
+    region: process.env.CREO_AWS_REGION || 'us-east-1',
+    credentials: process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+    } : undefined,
 });
 
 interface VisionGenerateResult {

@@ -6,13 +6,13 @@ import * as fs from 'fs';
 
 dotenv.config();
 
-const region = process.env.AWS_REGION || 'us-east-1';
+const region = process.env.CREO_AWS_REGION || 'us-east-1';
 
 const client = new S3Client({
     region: region,
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
     },
 });
 

@@ -10,8 +10,11 @@ import {
 import { calculateSecretHash } from '@/lib/authUtils';
 
 const cognitoClient = new CognitoIdentityProviderClient({
-    region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-    // Credentials will be automatically loaded from IAM role
+    region: process.env.CREO_AWS_REGION || 'us-east-1',
+    credentials: process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+    } : undefined,
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -79,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         if (errorName === 'CredentialsProviderError' || message.includes('Could not load credentials')) {
             return res.status(500).json({
-                error: 'AWS credentials not configured. Check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env',
+                error: 'AWS credentials not configured. Check CREO_AWS_ACCESS_KEY_ID and CREO_AWS_SECRET_ACCESS_KEY in .env',
             });
         }
         // Fallback: return the raw error name so you can debug it

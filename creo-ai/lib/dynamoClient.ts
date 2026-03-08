@@ -7,9 +7,11 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({
-    region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-    // Credentials will be automatically loaded from IAM role in production
-    // or from environment in development
+    region: process.env.CREO_AWS_REGION || 'us-east-1',
+    credentials: process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+    } : undefined,
 });
 
 // DynamoDBDocumentClient auto-marshals JS objects ↔ DynamoDB AttributeValue
