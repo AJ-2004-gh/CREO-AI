@@ -20,12 +20,20 @@ const POSTS_TABLE = process.env.POSTS_TABLE!;
 // Allow up to 60 seconds for multi-step agent interactions
 export const maxDuration = 60;
 
+// Set AWS credentials as environment variables for the AI SDK to use
+// The @ai-sdk/amazon-bedrock package reads from AWS_* environment variables
+if (process.env.CREO_AWS_REGION) {
+  process.env.AWS_REGION = process.env.CREO_AWS_REGION;
+}
+if (process.env.CREO_AWS_ACCESS_KEY_ID) {
+  process.env.AWS_ACCESS_KEY_ID = process.env.CREO_AWS_ACCESS_KEY_ID;
+}
+if (process.env.CREO_AWS_SECRET_ACCESS_KEY) {
+  process.env.AWS_SECRET_ACCESS_KEY = process.env.CREO_AWS_SECRET_ACCESS_KEY;
+}
+
 const bedrock = createAmazonBedrock({
   region: process.env.CREO_AWS_REGION || 'us-east-1',
-  credentials: process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
-    accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
-  } : undefined,
 });
 
 export async function POST(req: Request) {
