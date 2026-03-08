@@ -5,6 +5,8 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Platform, IndicLanguage, CulturalContext, Post } from '@/types/post';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import {
@@ -374,7 +376,9 @@ export function AgentUI({ platform, targetLanguage, culturalContext, onPostGener
                         : 'bg-white text-gray-800 shadow-sm border border-gray-100'
                         }`}
                     >
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{textContent}</p>
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed prose prose-sm max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{textContent}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -602,7 +606,9 @@ function GeneratedPostCard({ result }: { result: GeneratePostResult }) {
 
         {/* Post content */}
         <div className="bg-white rounded-xl p-4 border border-green-100 shadow-inner">
-          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{result.content}</p>
+          <div className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap prose prose-sm max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.content}</ReactMarkdown>
+          </div>
         </div>
 
         {/* Hashtags */}

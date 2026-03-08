@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Post } from '@/types/post';
 import { Check, Loader2, Calendar, LayoutGrid, Twitter, Linkedin, Instagram, Play } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /* ── Copy Button Component ── */
 function CopyButton({ text, className = '' }: { text: string; className?: string }) {
@@ -229,8 +231,8 @@ export default function HistoryPage() {
                       <div className="absolute -top-1 -right-1 z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
                          <CopyButton text={post.content} className="scale-90" />
                       </div>
-                      <div className="text-sm text-slate-600 whitespace-pre-wrap max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                         {post.content}
+                      <div className="text-sm text-slate-600 whitespace-pre-wrap max-h-40 overflow-y-auto pr-2 custom-scrollbar prose prose-sm prose-slate max-w-none">
+                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
                       </div>
                     </div>
 

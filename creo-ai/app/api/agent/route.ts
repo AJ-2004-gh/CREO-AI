@@ -102,6 +102,7 @@ When calling 'generate_post', write a LONG, DETAILED, high-quality post. Follow 
 
 For ALL platforms:
    - NEVER write a generic 2-line post. Always add texture: anecdotes, specific details, numbers, lists, or emotional resonance.
+   - USE RICH MARKDOWN formatting (bold, italics, headers, bullet points) throughout the post to make it more engaging and readable.
    - If cultural context is set, weave it naturally into the post (references, occasions, language nuances).
    - If language is not English, write the ENTIRE post in that language.`,
     // Stop after 5 steps to prevent infinite loops, or immediately after generate_post

@@ -3,14 +3,22 @@
  * Uses Amazon Bedrock Vision (Claude 3 Sonnet) to analyze images
  * and generate compelling social media content.
  */
-import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
+import { BedrockRuntimeClient, BedrockRuntimeClientConfig, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
 import { Platform, CulturalContext } from '@/types/post';
 import { generateCulturalPrompt } from '@/types/culturalContext';
 
-const bedrockClient = new BedrockRuntimeClient({
-    region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-    // Credentials will be automatically loaded from IAM role
-});
+const config: BedrockRuntimeClientConfig = {
+    region: process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+};
+
+if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY) {
+    config.credentials = {
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+    };
+}
+
+const bedrockClient = new BedrockRuntimeClient(config);
 
 interface VisionGenerateResult {
     content: string;
@@ -160,7 +168,7 @@ CRITICAL INSTRUCTIONS:
 1. Carefully analyze the image - identify products, people, settings, emotions, colors, text, branding, and key visual elements.
 2. Create a compelling narrative or message based on what you see in the image.
 3. Adapt the tone, formatting, and structure to match ${platform}'s best practices.
-4. Generate the entire content in ${targetLanguage === 'English' ? 'English' : `${targetLanguage} language using proper ${targetLanguage} script`}.
+4. Generate the entire content in ${targetLanguage === 'English' ? 'English' : `${targetLanguage} language using proper ${targetLanguage} script`}. Use RICH MARKDOWN formatting (bold, italics, headers, lists) where appropriate to make the text engaging.
 5. Start with a strong hook that captures attention and relates to the visual content.
 6. Make the content feel authentic and natural, as if a human wrote it while looking at this image.
 7. Include a clear call-to-action (CTA) appropriate for the platform.

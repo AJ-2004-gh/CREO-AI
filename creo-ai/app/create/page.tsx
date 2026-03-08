@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Post, OptimizationResult, IndicLanguage, CulturalContext } from '@/types/post';
 import { ConversationState, ConversationQuestion } from '@/types/conversation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Input';
@@ -1552,8 +1554,8 @@ export default function CreatePage() {
                 </div>
               )}
 
-              <div className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap" style={{ background: 'rgba(248,250,251,0.8)', color: '#334155', border: '1px solid rgba(0,0,0,0.05)' }}>
-                {post.content}
+              <div className="rounded-xl p-4 text-sm leading-relaxed whitespace-pre-wrap prose prose-sm prose-slate max-w-none" style={{ background: 'rgba(248,250,251,0.8)', color: '#334155', border: '1px solid rgba(0,0,0,0.05)' }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
               </div>
             </div>
 

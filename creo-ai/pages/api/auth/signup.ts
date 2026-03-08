@@ -5,14 +5,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import {
     CognitoIdentityProviderClient,
+    CognitoIdentityProviderClientConfig,
     SignUpCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { calculateSecretHash } from '@/lib/authUtils';
 
-const cognitoClient = new CognitoIdentityProviderClient({
-    region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
-    // Credentials will be automatically loaded from IAM role
-});
+const config: CognitoIdentityProviderClientConfig = {
+    region: process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+};
+
+if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY) {
+    config.credentials = {
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+    };
+}
+
+const cognitoClient = new CognitoIdentityProviderClient(config);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {

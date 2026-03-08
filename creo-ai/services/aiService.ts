@@ -40,7 +40,7 @@ User's Idea / Topic: "${idea}"
 Instructions:
 1. Analyze the core message of the user's idea.
 2. Adapt the tone, formatting, and structure to perfectly match the target platform's best practices (e.g., use line breaks, emojis where appropriate, professional vs. casual tone).
-3. Generate the entire content in ${targetLanguage === 'English' ? 'English' : `${targetLanguage} language using proper ${targetLanguage} script and characters`}.
+3. Generate the entire content in ${targetLanguage === 'English' ? 'English' : `${targetLanguage} language using proper ${targetLanguage} script and characters`}. USE RICH MARKDOWN formatting (bold, italics, bullet points, headers) to make the text engaging and readable.
 4. Ensure the opening acts as a strong hook to stop the scroll.
 5. Conclude with a clear, subtle or direct call to action (CTA) in ${targetLanguage === 'English' ? 'English' : targetLanguage}.
 6. Provide 3-5 highly relevant hashtags that mix broad appeal with niche targeting, in ${targetLanguage === 'English' ? 'English' : targetLanguage}${culturalContext !== 'None' ? ', incorporating culturally relevant hashtags related to ' + culturalContext : ''}.
@@ -93,6 +93,7 @@ CRITICAL REQUIREMENTS:
 - Create original, meaningful content
 - DO NOT repeat phrases or sentences
 - Write naturally like a human would
+- Use RICH MARKDOWN formatting (bold, italics, lists, headers) to make the text engaging
 - Include 3-5 relevant hashtags
 - Return ONLY JSON format: {"content": "post text", "suggested_hashtags": ["tag1", "tag2"]}`;
 
