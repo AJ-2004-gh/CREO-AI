@@ -22,8 +22,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const clientSecret = process.env.COGNITO_CLIENT_SECRET;
         const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/auth/callback`;
 
+        console.log('[/api/auth/callback] Environment check:', {
+            hasDomain: !!domain,
+            hasClientId: !!clientId,
+            hasClientSecret: !!clientSecret,
+            redirectUri,
+            domain: domain ? `${domain.substring(0, 10)}...` : 'missing',
+        });
+
         if (!domain) {
+            console.error('[/api/auth/callback] COGNITO_DOMAIN not configured');
             throw new Error('COGNITO_DOMAIN not configured');
+        }
+
+        if (!clientId) {
+            console.error('[/api/auth/callback] COGNITO_CLIENT_ID not configured');
+            throw new Error('COGNITO_CLIENT_ID not configured');
         }
 
         const details: Record<string, string> = {
@@ -52,12 +66,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             body: formBody,
         });
 
+        console.log('[/api/auth/callback] Token response status:', tokenRes.status);
+
         const data = await tokenRes.json();
 
         if (!tokenRes.ok) {
-            console.error('[/api/auth/callback] Token exchange failed:', data);
+            console.error('[/api/auth/callback] Token exchange failed:', {
+                status: tokenRes.status,
+                error: data.error,
+                error_description: data.error_description,
+            });
             return res.redirect(`/login?error=${encodeURIComponent(data.error || 'token_exchange_failed')}`);
         }
+
+        console.log('[/api/auth/callback] Token exchange successful');
 
         // We can't set localStorage from a server-side redirect.
         // Instead, we'll pass the tokens in the URL or a temporary session cookie.
@@ -68,6 +90,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.redirect(`/dashboard?token=${data.access_token}&user=google_user`);
     } catch (err) {
         console.error('[/api/auth/callback] Error:', err);
+        console.error('[/api/auth/callback] Error details:', {
+            message: err instanceof Error ? err.message : 'Unknown error',
+            stack: err instanceof Error ? err.stack : undefined,
+        });
         return res.redirect('/login?error=internal_server_error');
     }
 }
