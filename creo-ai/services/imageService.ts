@@ -3,8 +3,7 @@ import { S3Client, S3ClientConfig, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { invokeModel as invokeTextModel } from '@/lib/bedrockClient';
 
-<<<<<<< HEAD
-const region = process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1';
+const region = process.env.CREO_AWS_REGION || 'us-east-1';
 const bucketName = process.env.S3_BUCKET_NAME!;
 const IMAGE_MODEL_ID = process.env.IMAGE_MODEL_ID || 'amazon.nova-canvas-v1:0';
 
@@ -22,26 +21,6 @@ if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY
 
 const bedrockClient = new BedrockRuntimeClient(bedrockConfig);
 const s3Client = new S3Client(s3Config);
-=======
-const region = process.env.CREO_AWS_REGION || 'us-east-1';
-const bucketName = process.env.S3_BUCKET_NAME!;
-const IMAGE_MODEL_ID = process.env.IMAGE_MODEL_ID || 'amazon.nova-canvas-v1:0';
-
-const credentials = process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
-    accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
-} : undefined;
-
-const bedrockClient = new BedrockRuntimeClient({
-    region,
-    credentials,
-});
-
-const s3Client = new S3Client({
-    region,
-    credentials,
-});
->>>>>>> 64e54235b238b63c202762a3f094e7cf6448a81e
 
 async function uploadToS3(base64Data: string): Promise<string> {
     const buffer = Buffer.from(base64Data, 'base64');

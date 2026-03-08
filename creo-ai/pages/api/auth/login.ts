@@ -10,9 +10,8 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider';
 import { calculateSecretHash } from '@/lib/authUtils';
 
-<<<<<<< HEAD
 const config: CognitoIdentityProviderClientConfig = {
-    region: process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+    region: process.env.CREO_AWS_REGION || 'us-east-1',
 };
 
 if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY) {
@@ -23,15 +22,6 @@ if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY
 }
 
 const cognitoClient = new CognitoIdentityProviderClient(config);
-=======
-const cognitoClient = new CognitoIdentityProviderClient({
-    region: process.env.CREO_AWS_REGION || 'us-east-1',
-    credentials: process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
-        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
-    } : undefined,
-});
->>>>>>> 64e54235b238b63c202762a3f094e7cf6448a81e
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
