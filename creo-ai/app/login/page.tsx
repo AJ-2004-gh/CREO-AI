@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Zap, BarChart3, Globe, ArrowRight, Shield } from 'lucide-react';
 
@@ -64,12 +65,38 @@ function FloatingCard({
 }
 
 export default function LoginPage() {
+  // Check for error in URL params
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    const details = params.get('details');
+    
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        'internal_server_error': 'Server configuration error',
+        'config_error': 'Configuration error',
+        'token_exchange_failed': 'Authentication failed',
+        'invalid_response': 'Invalid response from server',
+        'no_code': 'No authorization code received',
+      };
+      
+      setErrorMessage(errorMessages[error] || error);
+      if (details) {
+        setErrorDetails(decodeURIComponent(details));
+      }
+    }
+  }, []);
+
   const handleCognitoLogin = () => {
     localStorage.removeItem('creo_token');
     localStorage.removeItem('creo_user');
-    const redirectUri = 'http://localhost:3000/api/auth/callback';
-    const domain = 'us-east-1k82zi1ywn.auth.us-east-1.amazoncognito.com';
-    const clientId = '4b9em2599sm42256qpnork0817';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const redirectUri = `${baseUrl}/api/auth/callback`;
+    const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'us-east-1k82zi1ywn.auth.us-east-1.amazoncognito.com';
+    const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '4b9em2599sm42256qpnork0817';
     const authUrl = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=email+openid+phone&redirect_uri=${encodeURIComponent(redirectUri)}`;
     window.location.href = authUrl;
   };
@@ -245,6 +272,32 @@ export default function LoginPage() {
               Sign in to your AI content studio
             </p>
           </div>
+
+          {/* Error Alert */}
+          {errorMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-red-600 text-xs font-bold">!</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-900 mb-1">{errorMessage}</p>
+                  {errorDetails && (
+                    <p className="text-xs text-red-700 font-mono bg-red-100 p-2 rounded mt-2">
+                      {errorDetails}
+                    </p>
+                  )}
+                  <p className="text-xs text-red-600 mt-2">
+                    Please check the environment variables in Amplify Console or contact support.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Login card */}
           <div

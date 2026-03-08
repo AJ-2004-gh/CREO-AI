@@ -61,7 +61,7 @@ function StatCard({
     >
       {/* Gradient band at top */}
       <div
-        className="absolute top-0 left-0 right-0 h-[3px] rounded-t-2xl"
+        className="absolute top-0 left-0 right-0 h-0.75 rounded-t-2xl"
         style={{ background: gradient }}
       />
 
@@ -454,7 +454,7 @@ export default function DashboardPage() {
                         {data.score_distribution.map((item, i) => (
                           <div key={item.range} className="flex items-center gap-2.5 text-[12px]">
                             <span
-                              className="w-3 h-3 rounded flex-shrink-0"
+                              className="w-3 h-3 rounded shrink-0"
                               style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length], borderRadius: '4px' }}
                             />
                             <span className="text-slate-600 font-medium flex-1">{item.range}</span>

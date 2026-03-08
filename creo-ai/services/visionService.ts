@@ -7,6 +7,7 @@ import { BedrockRuntimeClient, BedrockRuntimeClientConfig, ConverseCommand } fro
 import { Platform, CulturalContext } from '@/types/post';
 import { generateCulturalPrompt } from '@/types/culturalContext';
 
+<<<<<<< HEAD
 const config: BedrockRuntimeClientConfig = {
     region: process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
 };
@@ -19,6 +20,15 @@ if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY
 }
 
 const bedrockClient = new BedrockRuntimeClient(config);
+=======
+const bedrockClient = new BedrockRuntimeClient({
+    region: process.env.CREO_AWS_REGION || 'us-east-1',
+    credentials: process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY ? {
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
+    } : undefined,
+});
+>>>>>>> 64e54235b238b63c202762a3f094e7cf6448a81e
 
 interface VisionGenerateResult {
     content: string;
