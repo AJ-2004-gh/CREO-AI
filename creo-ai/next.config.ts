@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    output: 'standalone',
-    // Ensure trailing slashes are handled correctly
+    // trailingSlash: false is default; no output:'standalone' for Amplify WEB_COMPUTE
     trailingSlash: false,
     // Explicitly expose environment variables for Amplify deployment
     env: {
