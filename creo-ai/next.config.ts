@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     // Add empty turbopack config to silence Next.js 16 warning
     turbopack: {},
     // Exclude AWS SDK packages from bundling to prevent module resolution errors
-    serverComponentsExternalPackages: [
+    serverExternalPackages: [
         '@aws-sdk/client-bedrock-runtime',
         '@aws-sdk/client-dynamodb',
         '@aws-sdk/lib-dynamodb',
