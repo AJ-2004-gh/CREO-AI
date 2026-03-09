@@ -11,7 +11,7 @@ applications:
           commands:
             # Manually clear the Next.js cache to fix the internal_server_error
             - rm -rf .next/cache
-            - npm run build -- --no-turbopack
+            - npm run build
       artifacts:
         baseDirectory: .next
         files:
@@ -22,6 +22,8 @@ applications:
           # We remove .next/cache from here to ensure every build is fresh
     environment:
       variables:
+        # Disable Turbopack to use webpack for better AWS SDK compatibility
+        TURBOPACK: '0'
         # These will be populated from Amplify Console Environment Variables
         COGNITO_DOMAIN: $COGNITO_DOMAIN
         COGNITO_CLIENT_ID: $COGNITO_CLIENT_ID
