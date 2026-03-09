@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 CREO-AI
 
-## Getting Started
+**Transform your ideas into high-performing social media content with the power of AWS Bedrock.**
 
-First, run the development server:
+CREO-AI is a state-of-the-art SaaS platform designed for creators, marketers, and brands. It leverages advanced Generative AI to create, score, and optimize content across multiple platforms and languages, ensuring every post makes an impact.
+
+---
+
+## ✨ Key Features
+
+-   **🤖 Multi-Model Content Generation** – Powered by AWS Bedrock (Amazon Nova, Anthropic Claude 3.5).
+-   **📈 AI Content Scoring** – Real-time feedback on **Hook**, **Clarity**, and **Call-to-Action (CTA)**.
+-   **🌍 Cultural & Regional Intelligence** – Localization beyond translation, focusing on cultural nuances and Indic languages.
+-   **📸 Vision-to-Post** – Generate engaging captions and hashtags automatically from uploaded images.
+-   **📊 Analytics Dashboard** – Track your content performance and engagement trends.
+-   **🔐 Secure Enterprise Auth** – Built-in authentication with AWS Cognito.
+-   **⚡ High Performance** – Modern Next.js App Router architecture for speed and SEO.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | [Next.js](https://nextjs.org/) (App Router), [Tailwind CSS](https://tailwindcss.com/), [TypeScript](https://www.typescriptlang.org/) |
+| **AI Engine** | [AWS Bedrock](https://aws.amazon.com/bedrock/) (Nova Lite, Nova Pro, Claude 3.5 Sonnet) |
+| **Database** | [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) |
+| **Auth** | [Amazon Cognito](https://aws.amazon.com/cognito/) |
+| **Storage** | [Amazon S3](https://aws.amazon.com/s3/) |
+| **Deployment** | [AWS Amplify](https://aws.amazon.com/amplify/) |
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+
+-   Node.js 18.x or later
+-   AWS Account with Bedrock model access enabled (us-east-1)
+
+### 2. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/CREO-AI.git
+cd CREO-AI/creo-ai
+
+# Install dependencies
+npm install
+```
+
+### 3. Environment Setup
+
+Create a `.env` file in the root directory (use `.env.local.example` as a template):
+
+```env
+# AWS Configuration
+CREO_AWS_REGION=us-east-1
+CREO_AWS_ACCESS_KEY_ID=your_access_key
+CREO_AWS_SECRET_ACCESS_KEY=your_secret_key
+
+# Cognito Configuration
+COGNITO_CLIENT_ID=your_client_id
+COGNITO_USER_POOL_ID=your_pool_id
+
+# DynamoDB Tables
+POSTS_TABLE=Posts
+OPTIMIZATIONS_TABLE=Optimizations
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app in action.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔒 Security Note
 
-## Learn More
+> [!CAUTION]
+> **API Keys Exposed?** If you have accidentally committed secrets to GitHub:
+> 1. **Rotate your keys** immediately in the AWS Console.
+> 2. Use a tool like [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) or `git-filter-repo` to purge sensitive data from your git history.
+> 3. Ensure `.env` is always in your `.gitignore`.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📄 License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with ❤️ by the CREO-AI Team.
