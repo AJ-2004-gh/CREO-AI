@@ -7,7 +7,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Post, OptimizationResult, IndicLanguage, CulturalContext } from '@/types/post';
+import type { Post, OptimizationResult, IndicLanguage, CulturalContext, BestTimeResult } from '@/types/post';
 import { ConversationState, ConversationQuestion } from '@/types/conversation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -33,7 +33,8 @@ import {
   Check,
   Loader2,
   Mic,
-  Square
+  Square,
+  Clock
 } from 'lucide-react';
 
 type Platform = 'Twitter' | 'LinkedIn' | 'Instagram';
@@ -236,7 +237,7 @@ export default function CreatePage() {
   const [mode, setMode] = useState<'simple' | 'conversational' | 'agent' | 'vision'>('simple');
   const [idea, setIdea] = useState('');
 
-  
+
   // Vision mode state
   const [visionImage, setVisionImage] = useState<File | null>(null);
   const [visionImagePreview, setVisionImagePreview] = useState<string | null>(null);
@@ -255,6 +256,10 @@ export default function CreatePage() {
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [activeOptType, setActiveOptType] = useState<string>('');
   const [error, setError] = useState('');
+
+  // Best Time to Post state
+  const [bestTimeLoading, setBestTimeLoading] = useState(false);
+  const [bestTimeResult, setBestTimeResult] = useState<BestTimeResult | null>(null);
 
   // Conversational mode state
   const [conversationId, setConversationId] = useState<string>('');
@@ -395,6 +400,39 @@ export default function CreatePage() {
     }
   };
 
+  const fetchBestTime = async (generatedContent: string, currentPlatform: string, lang: string, ctx: string) => {
+    const token = getToken();
+    if (!token) return;
+
+    setBestTimeLoading(true);
+    setBestTimeResult(null);
+
+    try {
+      const res = await fetch('/api/best-time', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          content: generatedContent,
+          platform: currentPlatform,
+          targetLanguage: lang,
+          culturalContext: ctx,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setBestTimeResult(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch best time:', err);
+    } finally {
+      setBestTimeLoading(false);
+    }
+  };
+
   // FIX: Guard localStorage access for SSR safety
   const getToken = (): string | null => {
     if (typeof window === 'undefined') return null;
@@ -522,7 +560,7 @@ export default function CreatePage() {
   const resetConversation = async () => {
     setError('');
     const token = getToken();
-    
+
     if (token && conversationId) {
       try {
         await fetch('/api/conversation/answer', {
@@ -577,6 +615,9 @@ export default function CreatePage() {
 
       setPost(data);
       await resetConversation();
+
+      // Fetch best time to post
+      fetchBestTime(data.content, platform, targetLanguage, culturalContext);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate content');
     } finally {
@@ -601,6 +642,7 @@ export default function CreatePage() {
     setError('');
     setPost(null);
     setOptimizationResult(null);
+    setBestTimeResult(null);
 
     try {
       const res = await fetch('/api/generate', {
@@ -618,6 +660,9 @@ export default function CreatePage() {
       if (!res.ok) throw new Error(data.error || 'Generation failed');
 
       setPost(data);
+
+      // Fetch best time to post
+      fetchBestTime(data.content, platform, targetLanguage, culturalContext);
 
       if (imageMode !== 'none') {
         setGeneratingImage(true);
@@ -714,6 +759,7 @@ export default function CreatePage() {
     setError('');
     setPost(null);
     setOptimizationResult(null);
+    setBestTimeResult(null);
 
     try {
       // Convert image to base64
@@ -753,6 +799,9 @@ export default function CreatePage() {
       if (!res.ok) throw new Error(data.error || 'Vision generation failed');
 
       setPost(data);
+
+      // Fetch best time to post
+      fetchBestTime(data.content, platform, targetLanguage, culturalContext);
     } catch (err) {
       console.error('Vision generation error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -877,10 +926,10 @@ export default function CreatePage() {
             {mode === 'simple'
               ? 'Perfect for quick content creation'
               : mode === 'vision'
-              ? 'Upload an image and let AI write the perfect post'
-              : mode === 'agent'
-                ? 'Interactive AI assistant to build your post'
-                : 'Legacy detailed content flow'
+                ? 'Upload an image and let AI write the perfect post'
+                : mode === 'agent'
+                  ? 'Interactive AI assistant to build your post'
+                  : 'Legacy detailed content flow'
             }
           </div>
         </div>
@@ -1054,7 +1103,10 @@ export default function CreatePage() {
               platform={agentPlatform}
               targetLanguage={agentTargetLanguage}
               culturalContext={agentCulturalContext}
-              onPostGenerated={(newPost) => setPost(newPost)}
+              onPostGenerated={(newPost) => {
+                setPost(newPost);
+                fetchBestTime(newPost.content, newPost.platform, newPost.target_language, newPost.cultural_context || 'None');
+              }}
             />
           </Card>
         </motion.div>
@@ -1412,7 +1464,7 @@ export default function CreatePage() {
               </div>
             </div>
 
-            
+
             {/* Visuals Section */}
             <div className="pt-6 border-t border-gray-100">
               <label className="block text-sm font-semibold text-slate-700 mb-4">Visuals</label>
@@ -1569,11 +1621,11 @@ export default function CreatePage() {
                   <span className="text-xs text-teal-400">This may take 10–20 seconds</span>
                 </div>
               )}
-              
+
               {!post.image_url && !generatingImage && (
                 <div className="flex justify-center my-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={handleGenerateImageOnly}
                     icon={<Sparkles className="w-4 h-4" />}
                     className="shadow-sm border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800 transition-colors bg-white w-full sm:w-auto"
@@ -1617,6 +1669,62 @@ export default function CreatePage() {
                 <ScoreBar label="Overall Score" score={post.final_score} color={scoreColors.final_score} />
               </div>
             </div>
+
+            {/* Best Time to Post */}
+            {bestTimeLoading ? (
+              <div className="mt-6 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center gap-3">
+                <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
+                <span className="text-sm font-medium text-gray-600">Calculating the best time to post...</span>
+              </div>
+            ) : bestTimeResult ? (
+              <div className="mt-6 p-5 rounded-2xl" style={{ background: 'linear-gradient(to right, rgba(99,102,241,0.05), rgba(168,85,247,0.05))', border: '1px solid rgba(99,102,241,0.1)' }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <Clock className="w-5 h-5 text-indigo-600" />
+                  <h3 className="text-sm font-bold text-slate-800">Optimal Posting Times</h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Top Pick */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-indigo-100 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-indigo-600 tracking-wider">TOP PICK</span>
+                      <span className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-semibold border border-indigo-100">
+                        {bestTimeResult.top_pick.timezone}
+                      </span>
+                    </div>
+                    <p className="text-lg font-extrabold text-slate-800">
+                      {bestTimeResult.top_pick.day}
+                    </p>
+                    <p className="text-base font-medium text-indigo-600 mb-2">
+                      {bestTimeResult.top_pick.time}
+                    </p>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {bestTimeResult.top_pick.reason}
+                    </p>
+                  </div>
+
+                  {/* Other Times */}
+                  <div className="space-y-3 flex flex-col justify-center">
+                    {bestTimeResult.best_times.slice(1, 3).map((slot, idx) => (
+                      <div key={idx} className="bg-white/60 rounded-lg p-3 border border-gray-100 flex justify-between items-center transition-all hover:bg-white hover:shadow-sm">
+                        <div>
+                          <p className="text-sm font-bold text-slate-700">{slot.day}</p>
+                          <p className="text-xs text-slate-500">{slot.time}</p>
+                        </div>
+                        <div className="text-right max-w-[50%]">
+                          <p className="text-[10px] text-slate-400 truncate" title={slot.reason}>{slot.reason}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-indigo-100/50">
+                  <p className="text-xs text-indigo-800/80 font-medium">💡 {bestTimeResult.summary}</p>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {/* Optimization Panel */}

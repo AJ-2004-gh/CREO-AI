@@ -16,7 +16,8 @@ import {
   LogOut,
   X,
   Sparkles,
-  History
+  History,
+  TrendingUp
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -45,6 +46,12 @@ const sidebarItems: SidebarItem[] = [
     href: '/analytics',
     icon: <BarChart3 className="h-[18px] w-[18px]" />,
     color: 'amber',
+  },
+  {
+    label: 'X Trends',
+    href: '/x-analytics',
+    icon: <TrendingUp className="h-[18px] w-[18px]" />,
+    color: 'teal',
   },
   {
     label: 'Content',
@@ -84,16 +91,16 @@ const bottomItems: SidebarItem[] = [
 
 // per-item accent maps
 const iconColors: Record<string, string> = {
-  teal:   'text-teal-600',
+  teal: 'text-teal-600',
   violet: 'text-violet-600',
-  amber:  'text-amber-600',
-  gray:   'text-slate-500',
+  amber: 'text-amber-600',
+  gray: 'text-slate-500',
 };
 const iconBgColors: Record<string, string> = {
-  teal:   'from-teal-400/20 to-teal-500/10',
+  teal: 'from-teal-400/20 to-teal-500/10',
   violet: 'from-violet-400/20 to-violet-500/10',
-  amber:  'from-amber-400/20 to-amber-500/10',
-  gray:   'from-slate-300/20 to-slate-400/10',
+  amber: 'from-amber-400/20 to-amber-500/10',
+  gray: 'from-slate-300/20 to-slate-400/10',
 };
 
 interface SidebarProps {
@@ -105,12 +112,12 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
 
   const sidebarVariants = {
-    open:   { width: '15.5rem', transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] as const } },
-    closed: { width: '4.5rem',  transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] as const } },
+    open: { width: '15.5rem', transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] as const } },
+    closed: { width: '4.5rem', transition: { duration: 0.32, ease: [0.4, 0, 0.2, 1] as const } },
   };
 
   const labelVariants = {
-    open:   { opacity: 1, x: 0,   transition: { delay: 0.08, duration: 0.18 } },
+    open: { opacity: 1, x: 0, transition: { delay: 0.08, duration: 0.18 } },
     closed: { opacity: 0, x: -14, transition: { duration: 0.14 } },
   };
 

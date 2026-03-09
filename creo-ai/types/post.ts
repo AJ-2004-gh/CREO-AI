@@ -67,3 +67,16 @@ export interface OptimizationResult {
   improvement_percentage: number;
   suggested_hashtags?: string[];
 }
+
+export interface PostingTimeSlot {
+  day: string;
+  time: string;
+  timezone: string;
+  reason: string;
+}
+
+export interface BestTimeResult {
+  top_pick: PostingTimeSlot;
+  best_times: PostingTimeSlot[];
+  summary: string;
+}

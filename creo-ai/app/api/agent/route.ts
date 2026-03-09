@@ -22,18 +22,18 @@ export const maxDuration = 60;
 
 // Set AWS credentials as environment variables for the AI SDK to use
 // The @ai-sdk/amazon-bedrock package reads from AWS_* environment variables
-if (process.env.CREO_REGION) {
-  process.env.AWS_REGION = process.env.CREO_REGION;
+if (process.env.CREO_AWS_REGION) {
+  process.env.AWS_REGION = process.env.CREO_AWS_REGION;
 }
-if (process.env.CREO_ACCESS_KEY_ID) {
-  process.env.AWS_ACCESS_KEY_ID = process.env.CREO_ACCESS_KEY_ID;
+if (process.env.CREO_AWS_ACCESS_KEY_ID) {
+  process.env.AWS_ACCESS_KEY_ID = process.env.CREO_AWS_ACCESS_KEY_ID;
 }
-if (process.env.CREO_SECRET_ACCESS_KEY) {
-  process.env.AWS_SECRET_ACCESS_KEY = process.env.CREO_SECRET_ACCESS_KEY;
+if (process.env.CREO_AWS_SECRET_ACCESS_KEY) {
+  process.env.AWS_SECRET_ACCESS_KEY = process.env.CREO_AWS_SECRET_ACCESS_KEY;
 }
 
 const bedrock = createAmazonBedrock({
-  region: process.env.CREO_REGION || 'us-east-1',
+  region: process.env.CREO_AWS_REGION || 'us-east-1',
 });
 
 export async function POST(req: Request) {

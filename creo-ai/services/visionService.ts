@@ -8,13 +8,13 @@ import { Platform, CulturalContext } from '@/types/post';
 import { generateCulturalPrompt } from '@/types/culturalContext';
 
 const config: BedrockRuntimeClientConfig = {
-    region: process.env.CREO_REGION || 'us-east-1',
+    region: process.env.CREO_AWS_REGION || 'us-east-1',
 };
 
-if (process.env.CREO_ACCESS_KEY_ID && process.env.CREO_SECRET_ACCESS_KEY) {
+if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY) {
     config.credentials = {
-        accessKeyId: process.env.CREO_ACCESS_KEY_ID,
-        secretAccessKey: process.env.CREO_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
     };
 }
 

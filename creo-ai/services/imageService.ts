@@ -3,17 +3,17 @@ import { S3Client, S3ClientConfig, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { invokeModel as invokeTextModel } from '@/lib/bedrockClient';
 
-const region = process.env.CREO_REGION || process.env.NEXT_PUBLIC_REGION || 'us-east-1';
+const region = process.env.CREO_AWS_REGION || process.env.NEXT_PUBLIC_REGION || 'us-east-1';
 const bucketName = process.env.S3_BUCKET_NAME!;
 const IMAGE_MODEL_ID = process.env.IMAGE_MODEL_ID || 'amazon.nova-canvas-v1:0';
 
 const bedrockConfig: BedrockRuntimeClientConfig = { region };
 const s3Config: S3ClientConfig = { region };
 
-if (process.env.CREO_ACCESS_KEY_ID && process.env.CREO_SECRET_ACCESS_KEY) {
+if (process.env.CREO_AWS_ACCESS_KEY_ID && process.env.CREO_AWS_SECRET_ACCESS_KEY) {
     const creds = {
-        accessKeyId: process.env.CREO_ACCESS_KEY_ID,
-        secretAccessKey: process.env.CREO_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY,
     };
     bedrockConfig.credentials = creds;
     s3Config.credentials = creds;
