@@ -34,11 +34,6 @@ if (process.env.CREO_AWS_SECRET_ACCESS_KEY) {
 
 const bedrock = createAmazonBedrock({
   region: process.env.CREO_AWS_REGION || 'us-east-1',
-  // Explicitly provide credentials to bypass Vercel AI Gateway
-  credentials: {
-    accessKeyId: process.env.CREO_AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CREO_AWS_SECRET_ACCESS_KEY!,
-  },
 });
 
 export async function POST(req: Request) {
