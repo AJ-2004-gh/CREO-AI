@@ -69,8 +69,11 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
             ? image_base64.split(',')[1] 
             : image_base64;
 
-        console.log('[vision-generate] Processing image for user:', userId);
-        console.log('[vision-generate] Platform:', typedPlatform, 'Language:', typedLanguage);
+        console.log('[/api/vision-generate] ========== REQUEST START =========');
+        console.log('[/api/vision-generate] Processing image for user:', userId);
+        console.log('[/api/vision-generate] Platform:', typedPlatform, 'Language:', typedLanguage);
+        console.log('[/api/vision-generate] Image size:', base64Data.length);
+        console.log('[/api/vision-generate] Calling generateContentFromImage...');
 
         // 1. Analyze image and generate content via Vision AI
         const generated = await generateContentFromImage(
@@ -81,10 +84,14 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
             additional_context
         );
 
-        console.log('[vision-generate] Content generated successfully');
+        console.log('[/api/vision-generate] ✅ Content generated successfully');
+        console.log('[/api/vision-generate] Content length:', generated.content.length);
+        console.log('[/api/vision-generate] Image description:', generated.image_description.substring(0, 100));
 
         // 2. Score the generated content
+        console.log('[/api/vision-generate] Calling scoreContent...');
         const scores = await scoreContent(generated.content, typedPlatform);
+        console.log('[/api/vision-generate] ✅ Scores received:', scores.final_score);
 
         // 3. Build the post record
         const post = {
@@ -102,6 +109,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         };
 
         // 4. Persist to DynamoDB Posts table
+        console.log('[/api/vision-generate] Saving post to DynamoDB...');
         await dynamoDb.send(
             new PutCommand({
                 TableName: POSTS_TABLE,
@@ -109,19 +117,20 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
             })
         );
 
-        console.log('[vision-generate] Post saved to database');
+        console.log('[/api/vision-generate] ✅ Post saved to database');
+        console.log('[/api/vision-generate] ========== REQUEST COMPLETE =========');
 
         return res.status(200).json({
             ...post,
             image_description: generated.image_description,
         });
     } catch (error) {
-        console.error('[/api/vision-generate] Error:', error);
-        console.error('[/api/vision-generate] Error details:', {
-            name: error instanceof Error ? error.name : 'Unknown',
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-        });
+        console.error('[/api/vision-generate] ✗ CAUGHT ERROR');
+        console.error('[/api/vision-generate] Error type:', error instanceof Error ? error.constructor.name : typeof error);
+        console.error('[/api/vision-generate] Error message:', error instanceof Error ? error.message : String(error));
+        if (error instanceof Error && error.stack) {
+            console.error('[/api/vision-generate] Stack:', error.stack);
+        }
         
         const message = error instanceof Error ? error.message : 'Internal server error';
         

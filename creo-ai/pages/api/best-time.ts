@@ -43,30 +43,30 @@ ${content.substring(0, 600)}
 
 Consider: audience activity patterns on ${platform}, content type, cultural timing (festivals/events if applicable), and time zones relevant to the audience (IST for Indian content, EST/PST for English content).
 
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON in this exact format, but donot over fit to the examples, use :
 {
   "top_pick": {
-    "day": "Wednesday",
+    "day": "day name (e.g., Monday)",
     "time": "7:00 PM – 9:00 PM",
     "timezone": "IST",
     "reason": "One sentence explaining why this is the best slot"
   },
   "best_times": [
     {
-      "day": "Monday",
-      "time": "8:00 AM – 10:00 AM",
+      "day": "day name (e.g., Monday)",
+      "time": "optimal time",
       "timezone": "IST",
       "reason": "One sentence reason"
     },
     {
-      "day": "Wednesday",
-      "time": "7:00 PM – 9:00 PM",
+      "day": "day name (e.g., Wednesday)",
+      "time": "optimal time",
       "timezone": "IST",
       "reason": "One sentence reason"
     },
     {
-      "day": "Saturday",
-      "time": "11:00 AM – 1:00 PM",
+      "day": "day name (e.g., Saturday)",
+      "time": "optimal time",
       "timezone": "IST",
       "reason": "One sentence reason"
     }
@@ -75,10 +75,28 @@ Return ONLY valid JSON in this exact format:
 }`;
 
   try {
+    console.log('[/api/best-time] ========== REQUEST START =========');
+    console.log('[/api/best-time] Platform:', platform);
+    console.log('[/api/best-time] Target Language:', targetLanguage);
+    console.log('[/api/best-time] Cultural Context:', culturalContext);
+    console.log('[/api/best-time] Content length:', content.length);
+    console.log('[/api/best-time] Calling invokeModel...');
+    
     const result = await invokeModel<BestTimeResult>(prompt);
+    
+    console.log('[/api/best-time] ✅ Result received');
+    console.log('[/api/best-time] Result keys:', Object.keys(result));
+    console.log('[/api/best-time] Top pick:', result.top_pick?.day, result.top_pick?.time);
+    console.log('[/api/best-time] Number of best times:', result.best_times?.length);
+    console.log('[/api/best-time] ========== REQUEST COMPLETE =========');
+    
     return res.status(200).json(result);
   } catch (err) {
-    console.error('[best-time] error:', err);
+    console.error('[/api/best-time] ❌ CAUGHT ERROR');
+    console.error('[/api/best-time] Error:', err instanceof Error ? err.message : String(err));
+    if (err instanceof Error && err.stack) {
+      console.error('[/api/best-time] Stack:', err.stack);
+    }
     return res.status(500).json({ error: err instanceof Error ? err.message : 'Failed to get best posting times' });
   }
 }

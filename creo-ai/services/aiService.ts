@@ -16,6 +16,12 @@ export async function generateContent(
     targetLanguage: string = 'English',
     culturalContext: CulturalContext = 'None'
 ): Promise<GenerateResult> {
+    console.log('[aiService] ========== generateContent START =========');
+    console.log('[aiService] Idea:', idea);
+    console.log('[aiService] Platform:', platform);
+    console.log('[aiService] Target Language:', targetLanguage);
+    console.log('[aiService] Cultural Context:', culturalContext);
+    
     const platformGuidelines: Record<Platform, string> = {
         Twitter: 'Keep it under 280 characters, punchy and direct, with strong hook.',
         LinkedIn: 'Professional tone, 150-300 words, storytelling approach, thought leadership.',
@@ -53,26 +59,46 @@ Return ONLY valid JSON in this exact format (no markdown blocks, no explanation,
   "suggested_hashtags": ["hashtag1", "hashtag2", "hashtag3"]
 }`;
 
+    console.log('[aiService] Prompt length:', prompt.length);
+    console.log('[aiService] Calling invokeModel...');
+    
     const result = await invokeModel<GenerateResult>(prompt);
+    
+    console.log('[aiService] ✅ Result received from model');
+    console.log('[aiService] Result content length:', result.content.length);
+    console.log('[aiService] First 150 chars:', result.content.substring(0, 150));
 
     // Validate response structure
+    console.log('[aiService] Validating response structure...');
     if (!result.content || !Array.isArray(result.suggested_hashtags)) {
+        console.error('[aiService] ✗ Invalid response structure');
+        console.error('[aiService] Content exists?', !!result.content);
+        console.error('[aiService] Hashtags is array?', Array.isArray(result.suggested_hashtags));
         throw new Error('Invalid response structure from AI model');
     }
+    console.log('[aiService] ✅ Response structure valid');
 
     // Additional validation for content quality
     if (result.content.length < 10) {
+        console.error('[aiService] ✗ Generated content is too short:', result.content.length);
         throw new Error('Generated content is too short');
     }
+    console.log('[aiService] ✅ Content length acceptable');
 
     // Check for repetitive content (simple heuristic)
     const words = result.content.split(/\s+/);
     const uniqueWords = new Set(words);
-    if (words.length > 20 && uniqueWords.size / words.length < 0.3) {
+    const uniquenessRatio = uniqueWords.size / words.length;
+    console.log('[aiService] Uniqueness ratio:', uniquenessRatio.toFixed(2), '(words:', words.length, ')');
+    
+    if (words.length > 20 && uniquenessRatio < 0.3) {
         // Content is too repetitive, try once more with a stronger prompt
+        console.warn('[aiService] ⚠️ Content appears repetitive, retrying with stronger prompt...');
         return generateContentWithRetry(idea, platform, targetLanguage, culturalContext);
     }
 
+    console.log('[aiService] ✅ generateContent COMPLETE');
+    console.log('[aiService] ========== generateContent END =========');
     return result;
 }
 

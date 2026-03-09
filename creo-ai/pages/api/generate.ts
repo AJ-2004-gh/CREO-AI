@@ -50,16 +50,30 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
 
     try {
+        console.log('[/api/generate] ========== REQUEST START =========');
+        
         const typedPlatform = platform as Platform;
         const typedLanguage = target_language as IndicLanguage;
         const typedCulturalContext = (cultural_context || 'None') as CulturalContext;
         const userId = req.userId;
 
+        console.log('[/api/generate] Idea:', idea);
+        console.log('[/api/generate] Platform:', typedPlatform);
+        console.log('[/api/generate] Language:', typedLanguage);
+        console.log('[/api/generate] Cultural Context:', typedCulturalContext);
+        console.log('[/api/generate] User ID:', userId);
+
         // 1. Generate content via AI
+        console.log('[/api/generate] Calling generateContent...');
         const generated = await generateContent(idea.trim(), typedPlatform, typedLanguage, typedCulturalContext);
+        console.log('[/api/generate] ✅ Generated content received');
+        console.log('[/api/generate] Content length:', generated.content.length);
+        console.log('[/api/generate] First 200 chars:', generated.content.substring(0, 200));
 
         // 2. Score the generated content
+        console.log('[/api/generate] Calling scoreContent...');
         const scores = await scoreContent(generated.content, typedPlatform);
+        console.log('[/api/generate] ✅ Scores received:', scores.final_score);
 
         // 3. Build the post record
         const post = {
@@ -76,16 +90,23 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         };
 
         // 4. Persist to DynamoDB Posts table
+        console.log('[/api/generate] Saving post to DynamoDB...');
         await dynamoDb.send(
             new PutCommand({
                 TableName: POSTS_TABLE,
                 Item: post,
             })
         );
+        console.log('[/api/generate] ✅ Post saved successfully');
+        console.log('[/api/generate] ========== REQUEST COMPLETE =========');
 
         return res.status(200).json(post);
     } catch (error) {
-        console.error('[/api/generate] Error:', error);
+        console.error('[/api/generate] ✗ CAUGHT ERROR');
+        console.error('[/api/generate] Error:', error instanceof Error ? error.message : String(error));
+        if (error instanceof Error && error.stack) {
+            console.error('[/api/generate] Stack:', error.stack);
+        }
         const message = error instanceof Error ? error.message : 'Internal server error';
         return res.status(500).json({ error: message });
     }

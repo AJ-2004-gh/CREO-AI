@@ -24,9 +24,14 @@ const bedrockClient = new BedrockRuntimeClient(config);
  * @throws Error if model invocation or JSON parsing fails
  */
 export async function invokeModel<T>(prompt: string): Promise<T> {
-    const modelId = process.env.BEDROCK_MODEL_ID || 'amazon.nova-lite-v1:0';
+    const modelId = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-5-sonnet-20240620-v1:0';
 
     try {
+        console.log('[bedrockClient] ========== API CALL START =========');
+        console.log('[bedrockClient] Model ID:', modelId);
+        console.log('[bedrockClient] Prompt length:', prompt.length);
+        console.log('[bedrockClient] Prompt preview:', prompt.substring(0, 300));
+        
         const command = new ConverseCommand({
             modelId,
             messages: [
@@ -37,19 +42,23 @@ export async function invokeModel<T>(prompt: string): Promise<T> {
             ],
             inferenceConfig: {
                 maxTokens: 2048,
-                temperature: 0.3,
+                temperature: 0.7,
             },
         });
 
+        console.log('[bedrockClient] Sending request to Bedrock...');
         const response = await bedrockClient.send(command);
+        console.log('[bedrockClient] ✅ Bedrock response received');
 
         if (!response.output?.message?.content?.[0]?.text) {
+            console.error('[bedrockClient] ❌ Empty response from Bedrock model');
             throw new Error('Empty response from Bedrock model');
         }
 
         const textContent = response.output.message.content[0].text;
         console.log('[bedrockClient] Response length:', textContent.length);
-        console.log('[bedrockClient] First 200 chars:', textContent.substring(0, 200));
+        console.log('[bedrockClient] First 300 chars:', textContent.substring(0, 300));
+        console.log('[bedrockClient] Last 200 chars:', textContent.substring(Math.max(0, textContent.length - 200)));
 
         // Try multiple JSON extraction strategies
         let extractedJson: string | null = null;
@@ -201,7 +210,13 @@ export async function invokeModel<T>(prompt: string): Promise<T> {
             }
         }
     } catch (error) {
-        console.error('[bedrockClient] Error:', error);
+        console.error('[bedrockClient] ❌ ERROR CAUGHT');
+        console.error('[bedrockClient] Error type:', error instanceof Error ? error.constructor.name : typeof error);
+        console.error('[bedrockClient] Error message:', error instanceof Error ? error.message : String(error));
+        if (error instanceof Error && error.stack) {
+            console.error('[bedrockClient] Error stack:', error.stack);
+        }
+        console.log('[bedrockClient] ========== API CALL FAILED =========');
         throw error;
     }
 }

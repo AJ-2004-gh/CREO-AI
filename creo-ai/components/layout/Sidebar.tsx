@@ -48,12 +48,6 @@ const sidebarItems: SidebarItem[] = [
     color: 'amber',
   },
   {
-    label: 'X Trends',
-    href: '/x-analytics',
-    icon: <TrendingUp className="h-[18px] w-[18px]" />,
-    color: 'teal',
-  },
-  {
     label: 'Content',
     href: '/content',
     icon: <FileText className="h-[18px] w-[18px]" />,
