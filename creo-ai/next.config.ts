@@ -3,8 +3,46 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
     // trailingSlash: false is default; no output:'standalone' for Amplify WEB_COMPUTE
     trailingSlash: false,
-    // Add empty turbopack config to silence Next.js 16 warning
-    turbopack: {},
+    // Configure Turbopack to handle AWS SDK packages properly
+    turbopack: {
+        resolveAlias: {
+            '@aws-sdk/client-bedrock-runtime': '@aws-sdk/client-bedrock-runtime',
+            '@aws-sdk/client-dynamodb': '@aws-sdk/client-dynamodb',
+            '@aws-sdk/lib-dynamodb': '@aws-sdk/lib-dynamodb',
+            '@aws-sdk/client-s3': '@aws-sdk/client-s3',
+            '@aws-sdk/client-cognito-identity-provider': '@aws-sdk/client-cognito-identity-provider',
+            '@aws-sdk/client-transcribe-streaming': '@aws-sdk/client-transcribe-streaming',
+        },
+    },
+    // Exclude AWS SDK packages from bundling to prevent module resolution errors
+    serverExternalPackages: [
+        '@aws-sdk/client-bedrock-runtime',
+        '@aws-sdk/client-dynamodb',
+        '@aws-sdk/lib-dynamodb',
+        '@aws-sdk/client-s3',
+        '@aws-sdk/client-cognito-identity-provider',
+        '@aws-sdk/client-transcribe-streaming',
+        'aws-jwt-verify',
+        '@ai-sdk/amazon-bedrock',
+    ],
+    // Webpack configuration for proper AWS SDK handling
+    webpack: (config, { isServer }) => {
+        if (isServer) {
+            // Mark AWS SDK packages as external for server-side
+            config.externals = config.externals || [];
+            config.externals.push(
+                '@aws-sdk/client-bedrock-runtime',
+                '@aws-sdk/client-dynamodb',
+                '@aws-sdk/lib-dynamodb',
+                '@aws-sdk/client-s3',
+                '@aws-sdk/client-cognito-identity-provider',
+                '@aws-sdk/client-transcribe-streaming',
+                'aws-jwt-verify',
+                '@ai-sdk/amazon-bedrock'
+            );
+        }
+        return config;
+    },
     // Explicitly expose environment variables for Amplify deployment
     env: {
         COGNITO_DOMAIN: process.env.COGNITO_DOMAIN || '',
