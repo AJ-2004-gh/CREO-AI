@@ -11,7 +11,7 @@ applications:
           commands:
             # Manually clear the Next.js cache to fix the internal_server_error
             - rm -rf .next/cache
-            - npm run build
+            - npm run build:webpack
       artifacts:
         baseDirectory: .next
         files:
