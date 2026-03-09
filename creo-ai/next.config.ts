@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
     trailingSlash: false,
     // Add empty turbopack config to silence Next.js 16 warning
     turbopack: {},
+    // Exclude AWS SDK packages from bundling to prevent module resolution errors
+    serverComponentsExternalPackages: [
+        '@aws-sdk/client-bedrock-runtime',
+        '@aws-sdk/client-dynamodb',
+        '@aws-sdk/lib-dynamodb',
+        '@aws-sdk/client-s3',
+        '@aws-sdk/client-cognito-identity-provider',
+        'aws-jwt-verify',
+    ],
     // Explicitly expose environment variables for Amplify deployment
     env: {
         COGNITO_DOMAIN: process.env.COGNITO_DOMAIN || '',
