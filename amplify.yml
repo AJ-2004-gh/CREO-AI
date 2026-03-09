@@ -9,6 +9,8 @@ applications:
             - npm ci
         build:
           commands:
+            # Manually clear the Next.js cache to fix the internal_server_error
+            - rm -rf .next/cache
             - npm run build -- --no-turbopack
       artifacts:
         baseDirectory: .next
@@ -17,7 +19,7 @@ applications:
       cache:
         paths:
           - node_modules/**/*
-          - .next/cache/**/*
+          # We remove .next/cache from here to ensure every build is fresh
     environment:
       variables:
         # These will be populated from Amplify Console Environment Variables
