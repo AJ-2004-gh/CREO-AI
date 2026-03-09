@@ -12,7 +12,9 @@ const nextConfig: NextConfig = {
         '@aws-sdk/lib-dynamodb',
         '@aws-sdk/client-s3',
         '@aws-sdk/client-cognito-identity-provider',
+        '@aws-sdk/client-transcribe-streaming',
         'aws-jwt-verify',
+        '@ai-sdk/amazon-bedrock',
     ],
     // Explicitly expose environment variables for Amplify deployment
     env: {
