@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
     // trailingSlash: false is default; no output:'standalone' for Amplify WEB_COMPUTE
     trailingSlash: false,
+    // Add empty turbopack config to silence Next.js 16 warning
+    turbopack: {},
     // Explicitly expose environment variables for Amplify deployment
     env: {
         COGNITO_DOMAIN: process.env.COGNITO_DOMAIN || '',
