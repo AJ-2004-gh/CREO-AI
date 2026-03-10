@@ -42,12 +42,6 @@ const sidebarItems: SidebarItem[] = [
     color: 'violet',
   },
   {
-    label: 'Analytics',
-    href: '/analytics',
-    icon: <BarChart3 className="h-[18px] w-[18px]" />,
-    color: 'amber',
-  },
-  {
     label: 'Content',
     href: '/content',
     icon: <FileText className="h-[18px] w-[18px]" />,
