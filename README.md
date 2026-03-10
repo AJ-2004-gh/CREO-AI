@@ -2,6 +2,8 @@
 
 An AI-powered creative platform that leverages advanced language models and vision capabilities to help users generate, optimize, and analyze content with conversational intelligence.
 
+> **Built for AWS Hackathon** 🚀
+
 ## Features
 
 - **Conversational AI**: Chat-based interface for interactive content generation and analysis
@@ -175,12 +177,6 @@ amplify publish
 
 Amplify configuration is defined in `amplify.yml`
 
-## Contributing
-
-1. Create a feature branch (`git checkout -b feature/feature-name`)
-2. Commit your changes (`git commit -m 'Add feature'`)
-3. Push to the branch (`git push origin feature/feature-name`)
-4. Create a Pull Request
 
 ## License
 
